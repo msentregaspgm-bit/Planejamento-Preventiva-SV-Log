@@ -3,75 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SV LOG - Inteligência em Manutenção</title>
+    <title>SV LOG - Gestão de Frota</title>
     <style>
-        :root { 
-            --sv-blue: #001D3D; --sv-blue-mid: #003566; --sv-yellow: #FFD60A; 
-            --verde: #22C55E; --amarelo: #FFD60A; --vermelho: #EF4444; 
-        }
+        :root { --sv-blue: #001D3D; --sv-blue-mid: #003566; --sv-yellow: #FFD60A; --verde: #22C55E; --amarelo: #FFD60A; --vermelho: #EF4444; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--sv-blue); color: white; margin: 0; padding: 15px; }
-        
         .header { background: var(--sv-blue-mid); padding: 15px; border-bottom: 3px solid var(--sv-yellow); border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .kpi-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); transition: 0.3s; cursor: pointer; }
-        .kpi-card:hover { transform: translateY(-3px); background: #004080; }
+        .kpi-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); cursor: pointer; transition: 0.3s; }
+        .kpi-card:hover { background: #004080; transform: translateY(-3px); }
         .kpi-card h3 { margin: 0; font-size: 10px; color: var(--sv-yellow); text-transform: uppercase; }
-        .kpi-card .value { font-size: 22px; font-weight: 800; margin-top: 5px; }
+        .kpi-card .value { font-size: 22px; font-weight: 800; }
 
-        .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-        input#search { flex: 1; min-width: 250px; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,214,10,0.3); background: var(--sv-blue-mid); color: white; outline: none; }
-        
-        .btn-export { background: #fff; color: var(--sv-blue); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .btn-export:hover { background: var(--sv-yellow); }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        input#search { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,214,10,0.3); background: var(--sv-blue-mid); color: white; outline: none; }
 
         .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; }
         td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
 
-        .tendencia { font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-        .tendencia-ok { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-        .tendencia-alerta { background: rgba(239, 68, 68, 0.2); color: #fca5a5; animation: blink 1.5s infinite; }
+        /* Barra de Progresso */
+        .progress-bg { width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; margin-top: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.8s; }
 
-        @keyframes blink { 50% { opacity: 0.5; } }
         .farol { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .pulse { animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
         
-        #loader { text-align: center; padding: 50px; font-weight: bold; color: var(--sv-yellow); }
+        .btn-print { background: white; color: var(--sv-blue); border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        @media print {
+            body { background: white; color: black; }
+            .header, .kpi-grid, .controls, .progress-bg { display: none; }
+            .table-card { background: white; box-shadow: none; color: black; }
+            th, td { border: 1px solid #ddd; color: black; }
+            .badge-tipo { border: 1px solid black; }
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <span style="font-weight: 800; letter-spacing: 1px; font-size: 18px;">CENTRAL DE MANUTENÇÃO SV LOG</span>
-        <div id="relogio" style="font-size: 11px; opacity: 0.7;"></div>
+        <span style="font-weight: 800; font-size: 18px;">PROGRAMAÇÃO DE REVISÕES SV LOG</span>
+        <button class="btn-print" onclick="window.print()">🖨️ EXPORTAR PDF / IMPRIMIR</button>
     </div>
 
     <div class="kpi-grid">
-        <div class="kpi-card" onclick="setFilter('todos')"><h3>FROTA ANALISADA</h3><div class="value" id="kTotal">0</div></div>
+        <div class="kpi-card" onclick="setFilter('todos')"><h3>FROTA TOTAL</h3><div class="value" id="kTotal">0</div></div>
         <div class="kpi-card" onclick="setFilter('vermelho')" style="border-left-color: var(--vermelho)"><h3>VENCIDOS</h3><div class="value" id="kVencidas">0</div></div>
         <div class="kpi-card" onclick="setFilter('amarelo')" style="border-left-color: var(--amarelo)"><h3>ALERTA</h3><div class="value" id="kAtencao">0</div></div>
-        <div class="kpi-card" onclick="setFilter('verde')" style="border-left-color: var(--verde)"><h3>NO PRAZO</h3><div class="value" id="kOk">0</div></div>
+        <div class="kpi-card" onclick="setFilter('verde')" style="border-left-color: var(--verde)"><h3>EM DIA</h3><div class="value" id="kOk">0</div></div>
     </div>
 
     <div class="controls">
-        <input type="text" id="search" placeholder="Procurar placa, modelo ou tipo..." onkeyup="filtrar()">
-        <button class="btn-export" onclick="exportarRelatorio()">📥 EXPORTAR OFICINA (CRÍTICOS)</button>
-        <button onclick="carregarDados()" style="background:var(--sv-yellow); border:none; color:var(--sv-blue); padding:0 15px; border-radius:8px; cursor:pointer; font-weight:bold;">ATUALIZAR</button>
+        <input type="text" id="search" placeholder="Filtrar placa ou modelo..." onkeyup="filtrar()">
+        <button onclick="carregarDados()" style="background:var(--sv-yellow); border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:bold;">ATUALIZAR</button>
     </div>
 
-    <div id="loader">CALCULANDO TENDÊNCIAS...</div>
+    <div id="loader" style="text-align:center; padding:50px;">SINCRONIZANDO PLANILHA...</div>
 
     <div class="table-card" id="tableBox" style="display:none">
         <table id="tabelaPrincipal">
             <thead>
                 <tr>
-                    <th>Placa</th>
+                    <th>Placa / Modelo</th>
                     <th>KM Atual</th>
-                    <th>Tendência</th>
-                    <th>Próxima Meta</th>
+                    <th>Progresso Ciclo (40k)</th>
                     <th>Faltam</th>
                     <th>Tipo</th>
                     <th>Status</th>
@@ -82,7 +80,7 @@
     </div>
 
     <script>
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbx6B0OyOPM4bmRtCfrx0QMJDd8AXpUhJIyW4JFXdsVOaIxOJDvot-pzZy5FPEJoGcyw/exec";
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbykDaDvwOdyqe11ebzDOOVlJUUe8BcgkmdAESFGhOkPKvTCfr8Ahn96LC-d6c-_aX_K/exec";
         let DADOS_LOCAIS = [];
         let FILTRO_STATUS = 'todos';
 
@@ -92,9 +90,7 @@
                 DADOS_LOCAIS = await res.json();
                 DADOS_LOCAIS.sort((a, b) => a.faltam - b.faltam);
                 renderizar();
-            } catch (e) {
-                document.getElementById('loader').innerText = "Erro ao carregar dados.";
-            }
+            } catch (e) { document.getElementById('loader').innerText = "Erro ao carregar."; }
         }
 
         function renderizar() {
@@ -111,20 +107,21 @@
 
                 if (FILTRO_STATUS !== 'todos' && item.status !== FILTRO_STATUS) return;
 
-                const tr = document.createElement('tr');
-                tr.onclick = () => alert(`ITENS DA REVISÃO ${item.tipo}:\n\n${item.itens}`);
-                
-                let labelTendencia = item.faltam <= 0 ? 
-                    `<span class="tendencia tendencia-alerta">URGENTE</span>` : 
-                    `<span class="tendencia tendencia-ok">~${item.diasPreditivo} dias</span>`;
+                const metaAnterior = item.proximaKM - 40000;
+                const pct = Math.min(Math.max(((item.kmAtual - metaAnterior) / 40000) * 100, 0), 100);
+                const corBarra = item.status === 'verde' ? 'var(--verde)' : (item.status === 'amarelo' ? 'var(--amarelo)' : 'var(--vermelho)');
 
+                const tr = document.createElement('tr');
+                tr.onclick = () => alert(`MANUTENÇÃO ${item.tipo}\n\n${item.itens.replace(/,/g, '\n')}`);
                 tr.innerHTML = `
-                    <td><b>${item.prefixo}</b><br><small style="opacity:0.6">${item.modelo}</small></td>
+                    <td><b>${item.prefixo}</b><br><small>${item.modelo}</small></td>
                     <td>${item.kmAtual.toLocaleString()}</td>
-                    <td>${labelTendencia}</td>
-                    <td>${item.proximaKM.toLocaleString()}</td>
-                    <td style="color:${item.faltam <= 0 ? 'var(--vermelho)' : 'white'}"><b>${item.faltam.toLocaleString()} KM</b></td>
-                    <td><span style="border:1px solid var(--sv-yellow); padding:2px 5px; border-radius:4px; font-size:11px">${item.tipo}</span></td>
+                    <td>
+                        <small>${item.proximaKM.toLocaleString()} KM</small>
+                        <div class="progress-bg"><div class="progress-fill" style="width:${pct}%; background:${corBarra}"></div></div>
+                    </td>
+                    <td style="color:${corBarra}; font-weight:bold">${item.faltam.toLocaleString()} KM</td>
+                    <td><span style="border:1px solid var(--sv-yellow); padding:3px; border-radius:4px">${item.tipo}</span></td>
                     <td><div class="farol bg-${item.status} ${item.status === 'vermelho' ? 'pulse' : ''}"></div> ${item.status.toUpperCase()}</td>
                 `;
                 lista.appendChild(tr);
@@ -136,24 +133,6 @@
             document.getElementById('kVencidas').innerText = kpis.vencido;
         }
 
-        function exportarRelatorio() {
-            // Filtra Vermelhos e Amarelos para exportar para a oficina
-            const criticos = DADOS_LOCAIS.filter(d => d.status === 'vermelho' || d.status === 'amarelo');
-            
-            let csv = "PLACA;MODELO;KM_ATUAL;PROXIMA_REVISAO;TIPO;ITENS_DA_REVISAO\n";
-            criticos.forEach(d => {
-                csv += `${d.prefixo};${d.modelo};${d.kmAtual};${d.proximaKM};${d.tipo};"${d.itens.replace(/\n/g, ' ')}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", "Revisoes_Oficina_SVLOG.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
         function setFilter(s) { FILTRO_STATUS = s; renderizar(); }
         function filtrar() {
             let val = document.getElementById("search").value.toUpperCase();
@@ -162,7 +141,6 @@
         }
 
         carregarDados();
-        setInterval(() => { document.getElementById('relogio').innerText = "ÚLTIMA ATUALIZAÇÃO: " + new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
 </html>
