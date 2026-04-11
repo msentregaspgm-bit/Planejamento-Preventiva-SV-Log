@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manutenção Preventiva - SV LOG</title>
+    <title>Preventivas SV LOG</title>
     <style>
         :root { 
             --sv-blue: #001D3D; --sv-blue-mid: #003566; --sv-yellow: #FFD60A; 
@@ -11,55 +11,63 @@
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--sv-blue); color: white; margin: 0; padding: 15px; }
         
-        /* Layout Achatado */
         .header { background: var(--sv-blue-mid); padding: 15px; border-bottom: 3px solid var(--sv-yellow); border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .kpi-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); }
         .kpi-card h3 { margin: 0; font-size: 10px; color: var(--sv-yellow); text-transform: uppercase; }
-        .kpi-card .value { font-size: 18px; font-weight: 800; margin-top: 5px; }
+        .kpi-card .value { font-size: 20px; font-weight: 800; margin-top: 5px; }
 
-        .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; font-size: 13px; }
-        th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); }
+        .search-box { margin-bottom: 20px; width: 100%; }
+        input#search { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--sv-yellow); background: var(--sv-blue-mid); color: white; box-sizing: border-box; }
+
+        .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; font-size: 13px; }
+        th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); text-transform: uppercase; font-size: 11px; }
         td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        .farol { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-        .bg-verde { background: var(--verde); box-shadow: 0 0 8px var(--verde); }
-        .bg-amarelo { background: var(--amarelo); box-shadow: 0 0 8px var(--amarelo); color: black; }
-        .bg-vermelho { background: var(--vermelho); box-shadow: 0 0 8px var(--vermelho); }
+        .farol { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .bg-verde { background: var(--verde); box-shadow: 0 0 10px var(--verde); }
+        .bg-amarelo { background: var(--amarelo); box-shadow: 0 0 10px var(--amarelo); }
+        .bg-vermelho { background: var(--vermelho); box-shadow: 0 0 10px var(--vermelho); }
 
-        .badge-tipo { background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 4px; font-weight: bold; border: 1px solid var(--sv-yellow); }
+        .badge-tipo { background: rgba(255,214,10,0.1); color: var(--sv-yellow); padding: 4px 8px; border-radius: 4px; font-weight: bold; border: 1px solid var(--sv-yellow); }
         #loader { text-align: center; padding: 50px; font-weight: bold; color: var(--sv-yellow); }
+        
+        tr:hover { background: rgba(255,255,255,0.03); cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <span style="font-weight: 800; letter-spacing: 1px;">PREVENTIVAS SV LOG</span>
-        <button onclick="location.reload()" style="background:var(--sv-yellow); border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">ATUALIZAR</button>
+        <span style="font-weight: 800; letter-spacing: 1px; font-size: 18px;">PROGRAMAÇÃO DE REVISÕES</span>
+        <div id="relogio" style="font-size: 12px; opacity: 0.7;"></div>
     </div>
 
     <div class="kpi-grid">
-        <div class="kpi-card"><h3>TOTAL FROTA</h3><div class="value" id="kTotal">0</div></div>
+        <div class="kpi-card"><h3>FROTA ATIVA</h3><div class="value" id="kTotal">0</div></div>
         <div class="kpi-card" style="border-left-color: var(--verde)"><h3>EM DIA</h3><div class="value" id="kOk">0</div></div>
-        <div class="kpi-card" style="border-left-color: var(--amarelo)"><h3>ATENÇÃO</h3><div class="value" id="kAtencao">0</div></div>
+        <div class="kpi-card" style="border-left-color: var(--amarelo)"><h3>ATENÇÃO (-2k)</h3><div class="value" id="kAtencao">0</div></div>
         <div class="kpi-card" style="border-left-color: var(--vermelho)"><h3>VENCIDAS</h3><div class="value" id="kVencidas">0</div></div>
     </div>
 
-    <div id="loader">Buscando dados da telemetria...</div>
+    <div class="search-box">
+        <input type="text" id="search" placeholder="Buscar por Placa ou Modelo..." onkeyup="filtrar()">
+    </div>
+
+    <div id="loader">CONECTANDO AO SERVIDOR SV LOG...</div>
 
     <div class="table-card" id="tableBox" style="display:none">
-        <table>
+        <table id="tabelaPrincipal">
             <thead>
                 <tr>
-                    <th>PREFIXO</th>
-                    <th>MODELO</th>
-                    <th>KM ATUAL</th>
-                    <th>PRÓXIMA META</th>
-                    <th>FALTAM</th>
-                    <th>TIPO</th>
-                    <th>STATUS</th>
+                    <th>Placa</th>
+                    <th>Modelo</th>
+                    <th>KM Atual</th>
+                    <th>Próxima Meta</th>
+                    <th>Faltam (KM)</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody id="listaManutencao"></tbody>
@@ -67,15 +75,20 @@
     </div>
 
     <script>
+        // COLOQUE AQUI A SUA URL QUE ESTÁ FUNCIONANDO
         const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwpn9jusd-rCxGhrLd2KEoAfPvPkHO9i0zzDXLvUFU_4b1cxXfrbF0OHjlidrQv5RnK/exec";
 
         async function carregarDados() {
             try {
                 const res = await fetch(URL_SCRIPT);
                 const dados = await res.json();
+                if (dados.error) {
+                    document.getElementById('loader').innerText = "Erro: " + dados.error;
+                    return;
+                }
                 renderizar(dados);
             } catch (e) {
-                document.getElementById('loader').innerText = "Erro ao carregar dados.";
+                document.getElementById('loader').innerText = "Erro de conexão com a planilha.";
             }
         }
 
@@ -84,6 +97,7 @@
             document.getElementById('tableBox').style.display = 'block';
             
             const lista = document.getElementById('listaManutencao');
+            lista.innerHTML = "";
             let kpis = { total: dados.length, ok: 0, atencao: 0, vencido: 0 };
 
             dados.forEach(item => {
@@ -92,12 +106,13 @@
                 if(item.status === 'vermelho') kpis.vencido++;
 
                 const tr = document.createElement('tr');
+                tr.onclick = () => alert(`ITENS DA REVISÃO ${item.tipo}:\n${item.itens}`);
                 tr.innerHTML = `
                     <td><b>${item.prefixo}</b></td>
                     <td>${item.modelo}</td>
                     <td>${item.kmAtual.toLocaleString()}</td>
                     <td>${item.proximaKM.toLocaleString()}</td>
-                    <td style="font-weight:bold">${item.faltam.toLocaleString()} KM</td>
+                    <td style="font-weight:bold; color:${item.status === 'vermelho' ? '#EF4444' : 'white'}">${item.faltam.toLocaleString()}</td>
                     <td><span class="badge-tipo">${item.tipo}</span></td>
                     <td><div class="farol bg-${item.status}"></div> ${item.status.toUpperCase()}</td>
                 `;
@@ -110,7 +125,27 @@
             document.getElementById('kVencidas').innerText = kpis.vencido;
         }
 
+        function filtrar() {
+            let input = document.getElementById("search");
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById("tabelaPrincipal");
+            let tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) {
+                let tdPlaca = tr[i].getElementsByTagName("td")[0];
+                let tdModelo = tr[i].getElementsByTagName("td")[1];
+                if (tdPlaca || tdModelo) {
+                    let txtValue = (tdPlaca.textContent || tdPlaca.innerText) + (tdModelo.textContent || tdModelo.innerText);
+                    tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
+
         carregarDados();
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('relogio').innerText = "Última atualização: " + now.toLocaleTimeString();
+        }, 1000);
     </script>
 </body>
 </html>
