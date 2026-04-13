@@ -19,58 +19,55 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--sv-blue); color: var(--sv-text); margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Splash Screen */
         #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--sv-blue); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10000; }
         #splash img { width: 180px; }
 
-        /* Menu Home */
         #screen-home { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; text-align: center; }
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; max-width: 400px; }
         .menu-card { background: var(--sv-blue-mid); border: 2px solid var(--sv-yellow); padding: 25px; border-radius: 20px; cursor: pointer; transition: 0.3s; }
         .menu-card h2 { margin: 10px 0 0; font-size: 1.1rem; color: var(--sv-yellow); text-transform: uppercase; }
 
-        /* Telas Independente */
-        .screen { display: none; padding: 15px; width: 100%; min-height: 100vh; position: absolute; top: 0; left: 0; background: var(--sv-blue); z-index: 100; animation: fadeIn 0.4s; }
+        .screen { display: none; width: 100%; min-height: 100vh; background: var(--sv-blue); z-index: 100; animation: fadeIn 0.4s; }
         .active-screen { display: block !important; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Navbar */
         .navbar { background: var(--sv-blue-mid); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--sv-yellow); position: sticky; top: 0; z-index: 999; }
         .navbar img { height: 35px; }
         .btn-voltar { background: var(--sv-yellow); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; color: var(--sv-blue); font-size: 11px; text-transform: uppercase; }
 
-        /* Estilos Manutenção */
-        .kpi-grid-manut { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .kpi-card-manut { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); cursor: pointer; }
+        /* MANUTENÇÃO */
+        .kpi-grid-manut { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 15px; }
+        .kpi-card-manut { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); }
         .kpi-card-manut .value { font-size: 24px; font-weight: 800; }
-        .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; margin: 15px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 13px; }
-        th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; }
+        th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); }
         td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .farol { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .btn-done { background: white; color: var(--sv-blue); border: none; padding: 6px 12px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 10px; }
 
-        /* Estilos BI */
-        .kpi-grid-bi { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; }
-        .kpi-card-bi { background: var(--sv-blue-mid); padding: 12px; border-radius: 10px; text-align: center; border-left: 4px solid var(--sv-yellow); }
-        .kpi-card-bi .value { font-size: 16px; font-weight: 800; color: white; }
-        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        /* BI KPIs */
+        .kpi-grid-bi { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
+        @media (min-width: 768px) { .kpi-grid-bi { grid-template-columns: repeat(4, 1fr); } }
+        .kpi-card-bi { background: var(--sv-blue-mid); padding: 15px; border-radius: 10px; text-align: center; border-left: 4px solid var(--sv-yellow); }
+        .kpi-card-bi .value { font-size: 18px; font-weight: 800; color: white; margin-top: 5px; }
+
+        /* BI CHARTS */
+        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; padding: 15px; }
         .chart-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .canvas-wrapper { height: 250px; position: relative; }
+        .canvas-wrapper { height: 280px; position: relative; width: 100%; }
 
-        /* Checklist */
-        .category-block { background: white; border-radius: 10px; margin: 15px 0; overflow: hidden; color: #333; }
-        .category-title { background: #f1f3f6; font-weight: 800; padding: 12px; color: var(--sv-blue-mid); border-bottom: 1px solid #ddd; }
+        /* CHECKLIST */
+        .category-block { background: white; border-radius: 10px; margin: 15px; overflow: hidden; color: #333; }
+        .category-title { background: #f1f3f6; font-weight: 800; padding: 12px; color: var(--sv-blue-mid); }
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        select, input, textarea { background: #001d3d; color: white; border: 1.5px solid var(--sv-yellow); padding: 10px; border-radius: 8px; width: 100%; }
+        select, input { background: #001d3d; color: white; border: 1.5px solid var(--sv-yellow); padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-<div id="splash"><img src="https://i.imgur.com/G4xK2uE.jpeg" alt="Logo"></div>
+<div id="splash"><img src="Logo.png"></div>
 
 <div id="screen-home">
-    <img src="https://i.imgur.com/G4xK2uE.jpeg" style="width: 200px; margin-bottom: 40px;">
+    <img src="Logo.png" style="width: 200px; margin-bottom: 40px;">
     <div class="menu-grid">
         <div class="menu-card" onclick="showScreen('manutencao')"><h2>⚙️ Manutenção</h2></div>
         <div class="menu-card" onclick="showScreen('bi')"><h2>📊 Gestão BI</h2></div>
@@ -79,80 +76,71 @@
 </div>
 
 <div id="screen-manutencao" class="screen">
-    <div class="navbar"><img src="https://i.imgur.com/G4xK2uE.jpeg"> <button class="btn-voltar" onclick="voltarHome()">INÍCIO</button></div>
-    <div class="kpi-grid-manut" style="margin-top:20px;">
-        <div class="kpi-card-manut" onclick="setFilterManut('todos')"><h3>FROTA ATIVA</h3><div class="value" id="kTotalManut">0</div></div>
-        <div class="kpi-card-manut" onclick="setFilterManut('vermelho')" style="border-left-color: var(--sv-danger)"><h3>VENCIDAS</h3><div class="value" id="kVencidasManut">0</div></div>
-        <div class="kpi-card-manut" onclick="setFilterManut('amarelo')" style="border-left-color: var(--sv-yellow)"><h3>ATENÇÃO</h3><div class="value" id="kAtencaoManut">0</div></div>
-        <div class="kpi-card-manut" onclick="setFilterManut('verde')" style="border-left-color: var(--sv-success)"><h3>EM DIA</h3><div class="value" id="kOkManut">0</div></div>
-    </div>
-    <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; margin-bottom: 15px;">
-        <input type="text" id="searchManut" placeholder="Buscar placa..." onkeyup="filtrarManut()">
-        <button class="btn-voltar" style="background:var(--sv-danger); color:white" onclick="exportarPDFManut()">📄 PDF</button>
-        <button class="btn-voltar" style="background:var(--sv-success); color:white" onclick="exportarExcelManut()">📊 EXCEL</button>
-        <button class="btn-voltar" onclick="carregarDadosManut()">🔄 ATUALIZAR</button>
+    <div class="navbar"><img src="Logo.png"> <button class="btn-voltar" onclick="voltarHome()">INÍCIO</button></div>
+    <div class="kpi-grid-manut">
+        <div class="kpi-card-manut"><h3>FROTA</h3><div class="value" id="kTotalManut">0</div></div>
+        <div class="kpi-card-manut" style="border-left-color: var(--sv-danger)"><h3>VENCIDAS</h3><div class="value" id="kVencidasManut">0</div></div>
+        <div class="kpi-card-manut" style="border-left-color: var(--sv-yellow)"><h3>ATENÇÃO</h3><div class="value" id="kAtencaoManut">0</div></div>
+        <div class="kpi-card-manut" style="border-left-color: var(--sv-success)"><h3>OK</h3><div class="value" id="kOkManut">0</div></div>
     </div>
     <div class="table-card">
         <table id="tabelaDadosManut">
-            <thead><tr><th>Placa / Modelo</th><th>KM Atual</th><th>Meta</th><th>Status</th><th>Faltam</th><th>Tipo</th><th>Itens</th><th>Ação</th></tr></thead>
+            <thead><tr><th>Placa</th><th>KM Atual</th><th>Meta</th><th>Status</th><th>Faltam</th><th>Tipo</th><th>Ação</th></tr></thead>
             <tbody id="listaManutencao"></tbody>
         </table>
     </div>
 </div>
 
 <div id="screen-bi" class="screen">
-    <div class="navbar"><img src="https://i.imgur.com/G4xK2uE.jpeg"> <button class="btn-voltar" onclick="voltarHome()">INÍCIO</button></div>
-    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin: 15px 0;">
+    <div class="navbar"><img src="Logo.png"> <button class="btn-voltar" onclick="voltarHome()">INÍCIO</button></div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; padding: 15px;">
         <input type="month" id="fDataBI" onchange="updateDashboardBI()">
         <select id="fManutBI" onchange="updateDashboardBI()"><option value="">Manutenções</option><option value="Corretiva">Corretiva</option><option value="Preventiva">Preventiva</option></select>
         <select id="fStatusBI" onchange="updateDashboardBI()"><option value="">Status</option><option value="Finalizada">Finalizada</option><option value="Aberta">Aberta</option></select>
     </div>
     <div class="kpi-grid-bi">
         <div class="kpi-card-bi"><h3>TOTAL OS</h3><div class="value" id="kTotalBI">0</div></div>
+        <div class="kpi-card-bi"><h3>ABERTAS</h3><div class="value" id="kAbertasBI">0</div></div>
+        <div class="kpi-card-bi"><h3>FECHADAS</h3><div class="value" id="kFechadasBI">0</div></div>
         <div class="kpi-card-bi"><h3>CUSTO PEÇAS</h3><div class="value" id="kCustoBI">R$ 0</div></div>
     </div>
     <div class="charts-container">
-        <div class="chart-card"><div class="canvas-wrapper"><canvas id="cParetoBI"></canvas></div></div>
-        <div class="chart-card"><div class="canvas-wrapper"><canvas id="cTrendBI"></canvas></div></div>
+        <div class="chart-card"><h4>Volume por Sistema</h4><div class="canvas-wrapper"><canvas id="cParetoBI"></canvas></div></div>
+        <div class="chart-card"><h4>Custo por Sistema</h4><div class="canvas-wrapper"><canvas id="cCustoBIChart"></canvas></div></div>
     </div>
 </div>
 
 <div id="screen-checklist" class="screen">
-    <div class="navbar"><img src="https://i.imgur.com/G4xK2uE.jpeg"> <button class="btn-voltar" onclick="voltarHome()">INÍCIO</button></div>
-    <div style="max-width: 450px; margin: auto; padding-top: 20px;">
-        <label style="color:var(--sv-yellow); font-weight:700; font-size:11px;">OPERADOR</label>
-        <input type="text" id="operador" style="margin-bottom:10px;">
-        <label style="color:var(--sv-yellow); font-weight:700; font-size:11px;">TIPO MÁQUINA</label>
-        <select id="tipoMaquina" onchange="filtraIDsCheck()"><option value="">Selecione...</option></select>
-        <label style="color:var(--sv-yellow); font-weight:700; font-size:11px;">ID MÁQUINA</label>
-        <select id="idMaquina" style="margin-bottom:20px;"><option value="">Aguardando...</option></select>
-        <button class="btn-voltar" style="width:100%; padding:18px;" onclick="irParaChecklist()">INICIAR</button>
+    <div class="navbar"><img src="Logo.png"> <button class="btn-voltar" onclick="voltarHome()">INÍCIO</button></div>
+    <div style="max-width: 450px; margin: auto; padding: 20px;">
+        <label>OPERADOR</label><input type="text" id="operador" style="margin-bottom:10px; width:100%">
+        <label>MÁQUINA</label><select id="tipoMaquina" onchange="filtraIDsCheck()" style="width:100%"><option value="">Selecione...</option></select>
+        <select id="idMaquina" style="margin: 15px 0; width:100%"><option value="">ID...</option></select>
+        <button class="btn-voltar" style="width:100%" onclick="irParaChecklist()">INICIAR</button>
     </div>
 </div>
 
 <div id="screen-exec" class="screen">
-    <div class="navbar"><img src="https://i.imgur.com/G4xK2uE.jpeg"> <button class="btn-voltar" onclick="showScreen('checklist')">VOLTAR</button></div>
-    <div id="bannerCheck" style="text-align:center; padding:10px; font-weight:800; color:var(--sv-yellow); background: var(--sv-blue-mid); border-radius: 8px; margin: 10px 0;"></div>
+    <div class="navbar"><img src="Logo.png"> <button class="btn-voltar" onclick="showScreen('checklist')">VOLTAR</button></div>
     <div id="checklistArea"></div>
-    <button class="btn-voltar" style="width:100%; padding:20px; margin-top:15px;" onclick="alert('Enviado!')">ENVIAR CHECKLIST</button>
+    <button class="btn-voltar" style="width:100%; padding:20px" onclick="alert('Enviado!')">ENVIAR</button>
 </div>
 
 <script>
     const URL_MANUT = "https://script.google.com/macros/s/AKfycbyvcSi6c3rAAnJd7QpfOFWc84eOUrtIurW23giO-tLg34bmycNG_yxms8BWsWZzmQzv/exec";
     const URL_CHECKLIST = "https://script.google.com/macros/s/AKfycbxXLqXBs3Of8h2TE1I2B61NfcJVONzHe45wGpzRaXlHdSAnBsdrZ67aALUjiN3DVj1z/exec";
     const URL_BI = "https://script.google.com/macros/s/AKfycbyScWcG4rDlFV4IabBhxaIQD1FmA0s-iLS9RvZyfVpgi9XrUjWyQxztZrA0RjmOmREmIw/exec";
-    
-    let DADOS_MANUT = [], DADOS_BI_RAW = [], D_MAQUINAS = [], D_ITENS = [], charts = {}, FILTRO_MANUT = 'todos';
+
+    let DADOS_BI_RAW = [], D_MAQUINAS = [], D_ITENS = [], charts = {};
 
     window.onload = () => { setTimeout(() => document.getElementById('splash').style.display = 'none', 1000); };
 
     function showScreen(id) {
         document.querySelectorAll('.screen, #screen-home').forEach(s => s.classList.remove('active-screen'));
         document.getElementById('screen-' + id).classList.add('active-screen');
-        window.scrollTo(0,0);
-        if(id === 'manutencao') carregarDadosManut();
+        if(id === 'manutencao') carregarManut();
         if(id === 'bi') carregarBI();
-        if(id === 'checklist') carregarChecklistBase();
+        if(id === 'checklist') carregarChecklist();
     }
 
     function voltarHome() {
@@ -160,91 +148,84 @@
         document.getElementById('screen-home').classList.add('active-screen');
     }
 
-    // --- MANUTENÇÃO ---
-    async function carregarDadosManut() {
-        const res = await fetch(URL_MANUT);
-        DADOS_MANUT = await res.json();
-        renderizarManut();
-    }
-
-    function renderizarManut() {
-        const lista = document.getElementById('listaManutencao');
-        lista.innerHTML = "";
-        let kpis = { ok: 0, atencao: 0, vencido: 0 }, baixas = JSON.parse(localStorage.getItem('baixas_sv') || '{}'), processados = [];
-
-        DADOS_MANUT.forEach(v => {
-            let p = v.metasToda.find(m => !(baixas[v.prefixo] && baixas[v.prefixo].includes(m.km)) && v.kmAtual <= (m.km + 2000));
-            if (p) {
-                let faltam = p.km - v.kmAtual, status = "verde", prio = 3;
-                if (faltam <= 0) { status = "vermelho"; prio = 1; kpis.vencido++; }
-                else if (faltam <= 3000) { status = "amarelo"; prio = 2; kpis.atencao++; }
-                else kpis.ok++;
-                processados.push({ ...v, proxima: p, faltam, status, prio });
-            }
-        });
-
-        processados.sort((a,b) => a.prio - b.prio).forEach(item => {
-            if (FILTRO_MANUT !== 'todos' && item.status !== FILTRO_MANUT) return;
-            const cor = item.status === 'verde' ? 'var(--sv-success)' : (item.status === 'amarelo' ? 'var(--sv-yellow)' : 'var(--sv-danger)');
-            lista.innerHTML += `<tr>
-                <td><b>${item.prefixo}</b><br><small>${item.modelo}</small></td>
-                <td>${item.kmAtual.toLocaleString()}</td>
-                <td>${item.proxima.km.toLocaleString()}</td>
-                <td><div class="farol" style="background:${cor}"></div> ${item.status.toUpperCase()}</td>
-                <td style="color:${cor}; font-weight:bold">${item.faltam <= 0 ? 'VENCIDA' : item.faltam.toLocaleString()}</td>
-                <td>${item.proxima.tipo}</td>
-                <td><small>${item.proxima.itens}</small></td>
-                <td>${item.status !== 'verde' ? `<button class="btn-done" onclick="concluirManut('${item.prefixo}', ${item.proxima.km})">CONCLUIR</button>` : '---'}</td>
-            </tr>`;
-        });
-        document.getElementById('kTotalManut').innerText = kpis.vencido + kpis.atencao + kpis.ok;
-        document.getElementById('kOkManut').innerText = kpis.ok; document.getElementById('kAtencaoManut').innerText = kpis.atencao; document.getElementById('kVencidasManut').innerText = kpis.vencido;
-    }
-
-    function concluirManut(placa, km) {
-        let b = JSON.parse(localStorage.getItem('baixas_sv') || '{}');
-        if (!b[placa]) b[placa] = []; b[placa].push(km);
-        localStorage.setItem('baixas_sv', JSON.stringify(b));
-        renderizarManut();
-    }
-
-    function setFilterManut(s) { FILTRO_MANUT = s; renderizarManut(); }
-    function filtrarManut() {
-        let v = document.getElementById("searchManut").value.toUpperCase();
-        let rows = document.getElementById("listaManutencao").rows;
-        for (let r of rows) r.style.display = r.innerText.toUpperCase().includes(v) ? "" : "none";
-    }
-    function exportarPDFManut() { /* lógica pdf */ }
-    function exportarExcelManut() { /* lógica excel */ }
-
-    // --- BI ---
+    // --- LÓGICA BI (CORRIGIDA) ---
     async function carregarBI() {
-        if(DADOS_BI_RAW.length === 0) { const res = await fetch(URL_BI); DADOS_BI_RAW = await res.json(); }
+        if(DADOS_BI_RAW.length === 0) {
+            const res = await fetch(URL_BI);
+            DADOS_BI_RAW = await res.json();
+        }
         updateDashboardBI();
     }
+
     function updateDashboardBI() {
         const fD = document.getElementById('fDataBI').value;
-        const data = DADOS_BI_RAW.filter(d => fD ? String(d.data_e_hora_de_inicio).includes(fD) : true);
+        const fM = document.getElementById('fManutBI').value;
+        const fS = document.getElementById('fStatusBI').value;
+
+        const data = DADOS_BI_RAW.filter(d => 
+            (fD ? String(d.data_e_hora_de_inicio).includes(fD) : true) &&
+            (fM ? d.manutencao === fM : true) &&
+            (fS ? d.status === fS : true)
+        );
+
         document.getElementById('kTotalBI').innerText = data.length;
-        document.getElementById('kCustoBI').innerText = data.reduce((a,b)=>a+(b.produtos||0),0).toLocaleString('pt-br',{style:'currency',currency:'BRL'});
+        document.getElementById('kAbertasBI').innerText = data.filter(x => x.status === 'Aberta').length;
+        document.getElementById('kFechadasBI').innerText = data.filter(x => x.status === 'Finalizada').length;
+        document.getElementById('kCustoBI').innerText = data.reduce((a,b) => a + (b.produtos || 0), 0).toLocaleString('pt-br', {style:'currency', currency:'BRL'});
+
         renderChartsBI(data);
     }
+
     function renderChartsBI(data) {
-        if(charts.cPareto) charts.cPareto.destroy();
-        const ctxP = document.getElementById('cParetoBI');
-        const sP = sortBI(data, "sistema");
-        charts.cPareto = new Chart(ctxP, { type:'bar', data:{ labels:sP.l, datasets:[{label:'OS', data:sP.v, backgroundColor:'#FFD60A'}] }, options:{maintainAspectRatio:false} });
+        // Limpa gráficos anteriores se existirem
+        if(charts.pareto) charts.pareto.destroy();
+        if(charts.custo) charts.custo.destroy();
+
+        const sistemas = [...new Set(data.map(d => d.sistema || "N/A"))];
+        const contagem = sistemas.map(s => data.filter(d => d.sistema === s).length);
+        const custos = sistemas.map(s => data.filter(d => d.sistema === s).reduce((a,b) => a + (b.produtos || 0), 0));
+
+        const ctxP = document.getElementById('cParetoBI').getContext('2d');
+        charts.pareto = new Chart(ctxP, {
+            type: 'bar',
+            data: { labels: sistemas, datasets: [{ label: 'Qtd OS', data: contagem, backgroundColor: '#FFD60A' }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        const ctxC = document.getElementById('cCustoBIChart').getContext('2d');
+        charts.custo = new Chart(ctxC, {
+            type: 'bar',
+            data: { labels: sistemas, datasets: [{ label: 'Custo R$', data: custos, backgroundColor: '#4CC9F0' }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
     }
-    function sortBI(arr, k) {
-        const m = arr.reduce((acc, d) => { const x = d[k] || "N/A"; acc[x] = (acc[x] || 0) + 1; return acc; }, {});
-        const s = Object.entries(m).sort((a,b) => b[1] - a[1]).slice(0, 10);
-        return { l: s.map(x=>x[0]), v: s.map(x=>x[1]) };
+
+    // --- MANUTENÇÃO ---
+    async function carregarManut() {
+        const res = await fetch(URL_MANUT);
+        const data = await res.json();
+        const lista = document.getElementById('listaManutencao');
+        lista.innerHTML = data.map(item => `
+            <tr>
+                <td>${item.prefixo}</td>
+                <td>${item.kmAtual}</td>
+                <td>${item.proximaKM}</td>
+                <td>${item.status}</td>
+                <td>${item.faltam}</td>
+                <td>${item.tipo}</td>
+                <td><button class="btn-done">CONCLUIR</button></td>
+            </tr>
+        `).join('');
+        
+        document.getElementById('kTotalManut').innerText = data.length;
+        document.getElementById('kVencidasManut').innerText = data.filter(x => x.status === 'vermelho').length;
     }
 
     // --- CHECKLIST ---
-    async function carregarChecklistBase() {
+    async function carregarChecklist() {
         if(D_MAQUINAS.length === 0) {
-            const res = await fetch(URL_CHECKLIST); const data = await res.json();
+            const res = await fetch(URL_CHECKLIST);
+            const data = await res.json();
             D_MAQUINAS = data.maquinas; D_ITENS = data.itens;
             const selT = document.getElementById('tipoMaquina');
             [...new Set(D_MAQUINAS.map(m => m.tipo_maquina))].forEach(t => selT.innerHTML += `<option value="${t}">${t}</option>`);
@@ -252,20 +233,14 @@
     }
     function filtraIDsCheck() {
         const t = document.getElementById('tipoMaquina').value;
-        const s = document.getElementById('idMaquina'); s.innerHTML = '';
-        D_MAQUINAS.filter(m => m.tipo_maquina === t).forEach(m => s.innerHTML += `<option value="${m.id_maquina}">${m.id_maquina}</option>`);
+        const s = document.getElementById('idMaquina');
+        s.innerHTML = D_MAQUINAS.filter(m => m.tipo_maquina === t).map(m => `<option value="${m.id_maquina}">${m.id_maquina}</option>`).join('');
     }
     function irParaChecklist() {
-        const id = document.getElementById('idMaquina').value, t = document.getElementById('tipoMaquina').value;
-        if(!id) return alert("Selecione!");
+        const t = document.getElementById('tipoMaquina').value;
         const itensF = D_ITENS.filter(i => i.tipo_maquina.toString().toLowerCase() === t.toLowerCase());
-        document.getElementById('bannerCheck').innerText = `ID: ${id}`;
-        const area = document.getElementById('checklistArea'); area.innerHTML = "";
-        [...new Set(itensF.map(i => i.categoria))].forEach(c => {
-            let h = `<div class="category-block"><div class="category-title">${c}</div>`;
-            itensF.filter(i => i.categoria === c).forEach(it => { h += `<div class="item-row"><span>${it.item}</span><select style="width:80px"><option>OK</option><option>NOK</option></select></div>`; });
-            area.innerHTML += h + `</div>`;
-        });
+        const area = document.getElementById('checklistArea');
+        area.innerHTML = itensF.map(it => `<div class="category-block"><div class="item-row"><span>${it.item}</span><select style="width:80px"><option>OK</option><option>NOK</option></select></div></div>`).join('');
         showScreen('exec');
     }
 </script>
