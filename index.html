@@ -45,13 +45,13 @@
     </div>
 
     <div class="controls">
-        <input type="text" id="search" placeholder="Busca placa..." onkeyup="filtrar()">
+        <input type="text" id="search" placeholder="Busca rápida..." onkeyup="filtrar()">
         <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
         <button class="btn-action btn-excel" onclick="exportarExcel()">📊 EXCEL</button>
         <button class="btn-action btn-refresh" onclick="carregarDados()">🔄 ATUALIZAR</button>
     </div>
 
-    <div id="loader" style="text-align:center; padding: 20px;">Sincronizando...</div>
+    <div id="loader" style="text-align:center; padding: 20px;">Sincronizando Dados...</div>
     <div class="table-card" id="tableBox" style="display:none">
         <table id="tabelaDados">
             <thead>
@@ -61,6 +61,7 @@
                     <th>Próxima Meta</th>
                     <th>Status</th>
                     <th>Faltam</th>
+                    <th>Tipo</th>
                     <th>Ação</th>
                 </tr>
             </thead>
@@ -69,7 +70,7 @@
     </div>
 
     <script>
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycby362pra993g7VMuDEacZn1A-n-NaFU9s9E1V8qrgkNypX2PvzVjCHnOFrJfJP4OHXo/exec";
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyN8TwXhl9nkwNkzjrwjNMchXnOiHUpk2IFfQ9LP6ShG6rmeuNOOBpvCB1qsw453nL_/exec";
         let DADOS_LOCAIS = [];
         let FILTRO_STATUS = 'todos';
 
@@ -83,11 +84,11 @@
             } catch (e) { document.getElementById('loader').innerText = "Erro ao carregar dados."; }
         }
 
-        function concluirLocal(placa, kmMeta) {
-            let concluidos = JSON.parse(localStorage.getItem('sv_manut_concluidos') || '{}');
-            if (!concluidos[placa]) concluidos[placa] = [];
-            concluidos[placa].push(kmMeta);
-            localStorage.setItem('sv_manut_concluidos', JSON.stringify(concluidos));
+        function concluirMeta(placa, km) {
+            let baixas = JSON.parse(localStorage.getItem('baixas_sv') || '{}');
+            if (!baixas[placa]) baixas[placa] = [];
+            baixas[placa].push(km);
+            localStorage.setItem('baixas_sv', JSON.stringify(baixas));
             renderizar();
         }
 
@@ -97,16 +98,13 @@
             const lista = document.getElementById('listaManutencao');
             lista.innerHTML = "";
             let kpis = { total: DADOS_LOCAIS.length, ok: 0, atencao: 0, vencido: 0 };
-            
-            // Carrega as baixas feitas neste computador
-            let concluidos = JSON.parse(localStorage.getItem('sv_manut_concluidos') || '{}');
+            let baixas = JSON.parse(localStorage.getItem('baixas_sv') || '{}');
 
             DADOS_LOCAIS.forEach(veiculo => {
-                // Encontra a próxima meta que não foi "concluída" e não passou de 2000km
+                // Lógica de Pulo: Pula se já baixou ESSA meta OU se passou 2000km dela
                 let proxima = veiculo.metasToda.find(m => {
-                    let jaConcluiuEstaMeta = concluidos[veiculo.prefixo] && concluidos[veiculo.prefixo].includes(m.km);
-                    // Pula se clicou no botão para ESTA meta OU se passou 2000km da meta automaticamente
-                    return !jaConcluiuEstaMeta && veiculo.kmAtual <= (m.km + 2000);
+                    let jaBaixou = baixas[veiculo.prefixo] && baixas[veiculo.prefixo].includes(m.km);
+                    return !jaBaixou && veiculo.kmAtual <= (m.km + 2000);
                 });
 
                 if (proxima) {
@@ -129,14 +127,14 @@
                         <td>${proxima.km.toLocaleString()} KM</td>
                         <td><div class="farol" style="background:${cor}"></div> ${status.toUpperCase()}</td>
                         <td style="color:${cor}; font-weight:bold">${faltam <= 0 ? 'VENCIDA' : faltam.toLocaleString() + ' KM'}</td>
+                        <td>${proxima.tipo}</td>
                         <td>
-                            ${status !== 'verde' ? `<button class="btn-done" onclick="concluirLocal('${veiculo.prefixo}', ${proxima.km})">CONCLUIR</button>` : '---'}
+                            ${status !== 'verde' ? `<button class="btn-done" onclick="concluirMeta('${veiculo.prefixo}', ${proxima.km})">CONCLUIR</button>` : '---'}
                         </td>
                     `;
                     lista.appendChild(tr);
                 }
             });
-
             document.getElementById('kTotal').innerText = kpis.total;
             document.getElementById('kOk').innerText = kpis.ok;
             document.getElementById('kAtencao').innerText = kpis.atencao;
@@ -146,7 +144,7 @@
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'pt', 'a4');
-            doc.text("RELATÓRIO DE MANUTENÇÃO SV LOG", 40, 40);
+            doc.text("MANUTENÇÃO SV LOG", 40, 40);
             doc.autoTable({ html: '#tabelaDados', startY: 60 });
             doc.save("Manutencao_SVLOG.pdf");
         }
