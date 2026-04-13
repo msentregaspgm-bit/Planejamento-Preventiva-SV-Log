@@ -2,6 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Manutenção - SV LOG</title>
     <style>
         :root { --sv-blue: #001D3D; --sv-blue-mid: #003566; --sv-yellow: #FFD60A; --verde: #22C55E; --amarelo: #FFD60A; --vermelho: #EF4444; }
@@ -9,7 +10,7 @@
         .header { background: var(--sv-blue-mid); padding: 10px 20px; border-bottom: 3px solid var(--sv-yellow); border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .header img { height: 50px; }
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .kpi-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); cursor: pointer; }
+        .kpi-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); }
         .kpi-card .value { font-size: 22px; font-weight: 800; margin-top: 5px; }
         .controls { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 20px; }
         input#search { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,214,10,0.3); background: var(--sv-blue-mid); color: white; outline: none; }
@@ -19,43 +20,43 @@
         th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; text-transform: uppercase; }
         td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
         .progress-bg { width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; margin-top: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; transition: width 1s; }
-        .farol { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .btn-done { background: white; color: var(--sv-blue); border: none; padding: 5px 10px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 10px; }
+        .progress-fill { height: 100%; transition: width 1s ease-in-out; }
+        .farol { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
     </style>
 </head>
 <body>
     <div class="header">
         <div style="display: flex; align-items: center; gap: 15px;">
             <img src="https://i.imgur.com/G4xK2uE.jpeg" alt="Logo SV Logística">
-            <span style="font-weight: 800; font-size: 18px;">PROGRAMAÇÃO DE REVISÕES</span>
+            <span style="font-weight: 800; font-size: 18px;">PROGRAMAÇÃO DE REVISÕES (AUTOMÁTICO)</span>
         </div>
         <div id="relogio" style="font-size: 11px; opacity: 0.7;"></div>
     </div>
 
     <div class="kpi-grid">
-        <div class="kpi-card"><h3>TOTAL</h3><div class="value" id="kTotal">0</div></div>
+        <div class="kpi-card"><h3>FROTA</h3><div class="value" id="kTotal">0</div></div>
         <div class="kpi-card" style="border-left-color: var(--vermelho)"><h3>VENCIDAS</h3><div class="value" id="kVencidas">0</div></div>
         <div class="kpi-card" style="border-left-color: var(--amarelo)"><h3>ATENÇÃO</h3><div class="value" id="kAtencao">0</div></div>
         <div class="kpi-card" style="border-left-color: var(--verde)"><h3>OK</h3><div class="value" id="kOk">0</div></div>
     </div>
 
     <div class="controls">
-        <input type="text" id="search" placeholder="Busca placa..." onkeyup="filtrar()">
+        <input type="text" id="search" placeholder="Busca rápida placa ou modelo..." onkeyup="filtrar()">
         <button class="btn-refresh" onclick="carregarDados()">🔄 ATUALIZAR</button>
     </div>
 
-    <div id="loader" style="text-align: center; padding: 20px;">Carregando...</div>
+    <div id="loader" style="text-align: center; padding: 20px;">Sincronizando...</div>
+
     <div class="table-card" id="tableBox" style="display:none">
         <table>
             <thead>
                 <tr>
                     <th>Placa / Modelo</th>
                     <th>KM Atual</th>
-                    <th>Próxima Revisão</th>
+                    <th>Meta da Revisão</th>
+                    <th>Status</th>
                     <th>Faltam</th>
                     <th>Tipo</th>
-                    <th>Status / Ação</th>
                 </tr>
             </thead>
             <tbody id="listaManutencao"></tbody>
@@ -63,7 +64,7 @@
     </div>
 
     <script>
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycby2n-eTKGHyEHXDVRIm5h73SstYcd9QbmFrwNvhwfDt4GMgtIVDN_r160CuWjtrJF42/exec"; // <--- COLOQUE SUA URL AQUI
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycby2j_fR-HfUQygnUImLTMhYJKyLBzCyeO1H58CIl8G52IWa9PxA355nyOfghVou09dq/exec";
         let DADOS_LOCAIS = [];
 
         async function carregarDados() {
@@ -74,7 +75,7 @@
                 DADOS_LOCAIS = await res.json();
                 DADOS_LOCAIS.sort((a, b) => a.faltam - b.faltam);
                 renderizar();
-            } catch (e) { document.getElementById('loader').innerText = "Erro ao carregar."; }
+            } catch (e) { document.getElementById('loader').innerText = "Erro ao conectar."; }
         }
 
         function renderizar() {
@@ -90,23 +91,15 @@
                 if(item.status === 'vermelho') kpis.vencido++;
 
                 const corBarra = item.status === 'verde' ? 'var(--verde)' : (item.status === 'amarelo' ? 'var(--amarelo)' : 'var(--vermelho)');
-                const metaAnterior = item.proximaKM - 40000;
-                let pct = Math.min(Math.max(((item.kmAtual - metaAnterior) / 40000) * 100, 0), 100);
-
                 const tr = document.createElement('tr');
+                tr.onclick = () => alert(`📋 ITENS:\n${item.itens}`);
                 tr.innerHTML = `
                     <td><b>${item.prefixo}</b><br><small>${item.modelo}</small></td>
                     <td>${item.kmAtual.toLocaleString()}</td>
-                    <td>
-                        <small>${item.proximaKM.toLocaleString()} KM</small>
-                        <div class="progress-bg"><div class="progress-fill" style="width:${pct}%; background:${corBarra}"></div></div>
-                    </td>
+                    <td>${item.proximaKM.toLocaleString()} KM</td>
+                    <td><div class="farol" style="background:${corBarra}"></div> ${item.status.toUpperCase()}</td>
                     <td style="color:${corBarra}; font-weight:bold">${item.faltam <= 0 ? 'VENCIDA' : item.faltam.toLocaleString() + ' KM'}</td>
                     <td>${item.tipo}</td>
-                    <td>
-                        <div class="farol bg-${item.status}"></div> ${item.status.toUpperCase()}
-                        ${item.status !== 'verde' ? `<button class="btn-done" onclick="baixarManutencao('${item.prefixo}','${item.modelo}',${item.proximaKM},'${item.tipo}')">✓ CONCLUIR</button>` : ''}
-                    </td>
                 `;
                 lista.appendChild(tr);
             });
@@ -116,16 +109,6 @@
             document.getElementById('kVencidas').innerText = kpis.vencido;
         }
 
-        async function baixarManutencao(placa, modelo, km, tipo) {
-            if(!confirm(`Concluir revisão ${tipo} de ${km} KM?`)) return;
-            const url = `${URL_SCRIPT}?placa=${encodeURIComponent(placa)}&modelo=${encodeURIComponent(modelo)}&km=${km}&tipo=${encodeURIComponent(tipo)}&acao=baixar`;
-            try {
-                await fetch(url, { mode: 'no-cors' });
-                alert("Baixa realizada! Atualizando...");
-                setTimeout(carregarDados, 2500);
-            } catch (e) { alert("Erro."); }
-        }
-
         function filtrar() {
             let val = document.getElementById("search").value.toUpperCase();
             let rows = document.getElementById("listaManutencao").rows;
@@ -133,7 +116,7 @@
         }
 
         carregarDados();
+        setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
 </html>
-       
