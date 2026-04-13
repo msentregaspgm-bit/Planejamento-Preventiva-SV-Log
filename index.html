@@ -2,7 +2,6 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Manutenção - SV LOG</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -14,25 +13,25 @@
         .header img { height: 50px; }
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .kpi-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); cursor: pointer; }
-        .kpi-card .value { font-size: 24px; font-weight: 800; margin-top: 5px; }
+        .kpi-card .value { font-size: 24px; font-weight: 800; }
         .controls { display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; margin-bottom: 20px; }
         input#search { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,214,10,0.3); background: var(--sv-blue-mid); color: white; outline: none; }
         .btn-action { padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; height: 45px; display: flex; align-items: center; gap: 8px; font-size: 12px; }
         .btn-pdf { background: #ff4d4d; color: white; }
         .btn-excel { background: #22c55e; color: white; }
         .btn-refresh { background: var(--sv-yellow); color: var(--sv-blue); }
-        .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; text-transform: uppercase; }
         td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .btn-done { background: white; color: var(--sv-blue); border: none; padding: 6px 12px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 10px; }
         .farol { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        #loader { text-align: center; padding: 50px; font-weight: bold; color: var(--sv-yellow); }
     </style>
 </head>
 <body>
     <div class="header">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="https://i.imgur.com/G4xK2uE.jpeg" alt="Logo SV Logística">
+            <img src="https://i.imgur.com/G4xK2uE.jpeg" alt="Logo SV">
             <span style="font-weight: 800; font-size: 18px;">MANUTENÇÃO PREVENTIVA SV LOG</span>
         </div>
         <div id="relogio" style="font-size: 11px; opacity: 0.7;"></div>
@@ -42,20 +41,19 @@
         <div class="kpi-card" onclick="setFilter('todos')"><h3>FROTA</h3><div class="value" id="kTotal">0</div></div>
         <div class="kpi-card" onclick="setFilter('vermelho')" style="border-left-color: var(--vermelho)"><h3>VENCIDAS</h3><div class="value" id="kVencidas">0</div></div>
         <div class="kpi-card" onclick="setFilter('amarelo')" style="border-left-color: var(--amarelo)"><h3>ATENÇÃO</h3><div class="value" id="kAtencao">0</div></div>
-        <div class="kpi-card" onclick="setFilter('verde')" style="border-left-color: var(--verde)"><h3>EM DIA</h3><div class="value" id="kOk">0</div></div>
+        <div class="kpi-card" onclick="setFilter('verde')" style="border-left-color: var(--verde)"><h3>OK</h3><div class="value" id="kOk">0</div></div>
     </div>
 
     <div class="controls">
-        <input type="text" id="search" placeholder="Busca placa ou modelo..." onkeyup="filtrar()">
-        <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF CHECKLIST</button>
-        <button class="btn-action btn-excel" onclick="exportarExcel()">📊 EXCEL GERAL</button>
+        <input type="text" id="search" placeholder="Busca placa..." onkeyup="filtrar()">
+        <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
+        <button class="btn-action btn-excel" onclick="exportarExcel()">📊 EXCEL</button>
         <button class="btn-action btn-refresh" onclick="carregarDados()">🔄 ATUALIZAR</button>
     </div>
 
-    <div id="loader">SINCRONIZANDO DADOS...</div>
-
+    <div id="loader" style="text-align:center; padding: 20px;">Sincronizando...</div>
     <div class="table-card" id="tableBox" style="display:none">
-        <table>
+        <table id="tabelaDados">
             <thead>
                 <tr>
                     <th>Placa / Modelo</th>
@@ -63,7 +61,7 @@
                     <th>Próxima Meta</th>
                     <th>Status</th>
                     <th>Faltam</th>
-                    <th>Tipo</th>
+                    <th>Ação</th>
                 </tr>
             </thead>
             <tbody id="listaManutencao"></tbody>
@@ -71,7 +69,7 @@
     </div>
 
     <script>
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwvAxv2iIE-KJdvGfJQpvhgt-_0G5iJL9Q-R8mE4qr_EMitpvyEBez3GMfdDO8De6-6/exec";
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycby362pra993g7VMuDEacZn1A-n-NaFU9s9E1V8qrgkNypX2PvzVjCHnOFrJfJP4OHXo/exec";
         let DADOS_LOCAIS = [];
         let FILTRO_STATUS = 'todos';
 
@@ -81,9 +79,16 @@
             try {
                 const res = await fetch(URL_SCRIPT);
                 DADOS_LOCAIS = await res.json();
-                DADOS_LOCAIS.sort((a, b) => a.faltam - b.faltam);
                 renderizar();
             } catch (e) { document.getElementById('loader').innerText = "Erro ao carregar dados."; }
+        }
+
+        function concluirLocal(placa, kmMeta) {
+            let concluidos = JSON.parse(localStorage.getItem('sv_manut_concluidos') || '{}');
+            if (!concluidos[placa]) concluidos[placa] = [];
+            concluidos[placa].push(kmMeta);
+            localStorage.setItem('sv_manut_concluidos', JSON.stringify(concluidos));
+            renderizar();
         }
 
         function renderizar() {
@@ -92,26 +97,46 @@
             const lista = document.getElementById('listaManutencao');
             lista.innerHTML = "";
             let kpis = { total: DADOS_LOCAIS.length, ok: 0, atencao: 0, vencido: 0 };
+            
+            // Carrega as baixas feitas neste computador
+            let concluidos = JSON.parse(localStorage.getItem('sv_manut_concluidos') || '{}');
 
-            DADOS_LOCAIS.forEach(item => {
-                if(item.status === 'verde') kpis.ok++;
-                if(item.status === 'amarelo') kpis.atencao++;
-                if(item.status === 'vermelho') kpis.vencido++;
-                if (FILTRO_STATUS !== 'todos' && item.status !== FILTRO_STATUS) return;
+            DADOS_LOCAIS.forEach(veiculo => {
+                // Encontra a próxima meta que não foi "concluída" e não passou de 2000km
+                let proxima = veiculo.metasToda.find(m => {
+                    let jaConcluiuEstaMeta = concluidos[veiculo.prefixo] && concluidos[veiculo.prefixo].includes(m.km);
+                    // Pula se clicou no botão para ESTA meta OU se passou 2000km da meta automaticamente
+                    return !jaConcluiuEstaMeta && veiculo.kmAtual <= (m.km + 2000);
+                });
 
-                const corBarra = item.status === 'verde' ? 'var(--verde)' : (item.status === 'amarelo' ? 'var(--amarelo)' : 'var(--vermelho)');
-                const tr = document.createElement('tr');
-                tr.onclick = () => alert(`📋 ITENS:\n${item.itens}`);
-                tr.innerHTML = `
-                    <td><b>${item.prefixo}</b><br><small>${item.modelo}</small></td>
-                    <td>${item.kmAtual.toLocaleString()}</td>
-                    <td>${item.proximaKM.toLocaleString()} KM</td>
-                    <td><div class="farol" style="background:${corBarra}"></div> ${item.status.toUpperCase()}</td>
-                    <td style="color:${corBarra}; font-weight:bold">${item.faltam <= 0 ? 'VENCIDA' : item.faltam.toLocaleString() + ' KM'}</td>
-                    <td>${item.tipo}</td>
-                `;
-                lista.appendChild(tr);
+                if (proxima) {
+                    let faltam = proxima.km - veiculo.kmAtual;
+                    let status = "verde";
+                    if (faltam <= 0) status = "vermelho";
+                    else if (faltam <= 3000) status = "amarelo";
+
+                    if(status === 'verde') kpis.ok++;
+                    if(status === 'amarelo') kpis.atencao++;
+                    if(status === 'vermelho') kpis.vencido++;
+
+                    if (FILTRO_STATUS !== 'todos' && status !== FILTRO_STATUS) return;
+
+                    const cor = status === 'verde' ? 'var(--verde)' : (status === 'amarelo' ? 'var(--amarelo)' : 'var(--vermelho)');
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><b>${veiculo.prefixo}</b><br><small>${veiculo.modelo}</small></td>
+                        <td>${veiculo.kmAtual.toLocaleString()}</td>
+                        <td>${proxima.km.toLocaleString()} KM</td>
+                        <td><div class="farol" style="background:${cor}"></div> ${status.toUpperCase()}</td>
+                        <td style="color:${cor}; font-weight:bold">${faltam <= 0 ? 'VENCIDA' : faltam.toLocaleString() + ' KM'}</td>
+                        <td>
+                            ${status !== 'verde' ? `<button class="btn-done" onclick="concluirLocal('${veiculo.prefixo}', ${proxima.km})">CONCLUIR</button>` : '---'}
+                        </td>
+                    `;
+                    lista.appendChild(tr);
+                }
             });
+
             document.getElementById('kTotal').innerText = kpis.total;
             document.getElementById('kOk').innerText = kpis.ok;
             document.getElementById('kAtencao').innerText = kpis.atencao;
@@ -121,21 +146,14 @@
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'pt', 'a4');
-            const criticos = DADOS_LOCAIS.filter(d => d.status !== 'verde');
-            doc.text("CHECKLIST MANUTENÇÃO SV LOG", 40, 40);
-            doc.autoTable({
-                head: [['Placa', 'Modelo', 'KM Atual', 'Próxima', 'Faltam', 'Tipo']],
-                body: criticos.map(d => [d.prefixo, d.modelo, d.kmAtual, d.proximaKM, d.faltam, d.tipo]),
-                startY: 60
-            });
-            doc.save("Checklist_Manutencao_SVLOG.pdf");
+            doc.text("RELATÓRIO DE MANUTENÇÃO SV LOG", 40, 40);
+            doc.autoTable({ html: '#tabelaDados', startY: 60 });
+            doc.save("Manutencao_SVLOG.pdf");
         }
 
         function exportarExcel() {
-            const ws = XLSX.utils.json_to_sheet(DADOS_LOCAIS);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Frota");
-            XLSX.writeFile(wb, "Relatorio_Manutencao_SVLOG.xlsx");
+            const wb = XLSX.utils.table_to_book(document.getElementById('tabelaDados'));
+            XLSX.writeFile(wb, "Manutencao_SVLOG.xlsx");
         }
 
         function setFilter(s) { FILTRO_STATUS = s; renderizar(); }
