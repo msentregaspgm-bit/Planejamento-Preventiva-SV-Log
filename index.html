@@ -29,15 +29,13 @@
         .progress-fill { height: 100%; transition: width 1s; }
         .farol { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .pulse { animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
         .btn-done { background: white; color: var(--sv-blue); border: none; padding: 6px 12px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 10px; }
-        .btn-done:hover { background: var(--verde); color: white; }
     </style>
 </head>
 <body>
     <div class="header">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <img src="https://i.imgur.com/G4xK2uE.jpeg" alt="Logo SV Log">
+            <img src="https://i.imgur.com/G4xK2uE.jpeg" alt="Logo SV">
             <span style="font-weight: 800; font-size: 18px;">MANUTENÇÃO PREVENTIVA SV LOG</span>
         </div>
         <div id="relogio" style="font-size: 11px; opacity: 0.7;"></div>
@@ -75,7 +73,7 @@
     </div>
 
     <script>
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwifZESx2vyIxr0gcdQd1tAAryBT0avzkQIQvfU_NaCvCz7eN1qsz2ZzpKWPoUt2RD7/exec";
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbzF3zAuOBrkviRGtXtxJqqE14YX2PRNQwmSjVHky0nuIyVbfSkA52oHtDhcftOolGua/exec";
         let DADOS_LOCAIS = [];
         let FILTRO_STATUS = 'todos';
 
@@ -87,7 +85,7 @@
                 DADOS_LOCAIS = await res.json();
                 DADOS_LOCAIS.sort((a, b) => a.faltam - b.faltam);
                 renderizar();
-            } catch (e) { document.getElementById('loader').innerText = "Erro ao conectar."; }
+            } catch (e) { document.getElementById('loader').innerText = "Erro ao carregar dados."; }
         }
 
         function renderizar() {
@@ -132,13 +130,13 @@
         }
 
         async function baixarManutencao(placa, modelo, km, tipo) {
-            if(!confirm(`Concluir revisão ${tipo} de ${km} KM?`)) return;
+            if(!confirm(`Dar baixa para ${placa}?`)) return;
             const btn = event.target;
             btn.innerText = "⏳..."; btn.disabled = true;
             const url = `${URL_SCRIPT}?placa=${encodeURIComponent(placa)}&modelo=${encodeURIComponent(modelo)}&km=${km}&tipo=${encodeURIComponent(tipo)}&acao=baixar`;
             try {
                 await fetch(url, { mode: 'no-cors' });
-                alert("Baixa enviada! Atualizando em 3 segundos...");
+                alert("Baixa realizada! Atualizando...");
                 setTimeout(carregarDados, 3000);
             } catch (e) { alert("Erro."); btn.innerText = "✓ CONCLUIR"; btn.disabled = false; }
         }
@@ -149,8 +147,8 @@
             let rows = document.getElementById("listaManutencao").rows;
             for (let r of rows) { r.style.display = r.innerText.toUpperCase().includes(val) ? "" : "none"; }
         }
-        function exportarPDF() { /* lógica pdf */ }
-        function exportarExcel() { /* lógica excel */ }
+        function exportarPDF() { /* logica pdf */ }
+        function exportarExcel() { /* logica excel */ }
 
         carregarDados();
         setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString(); }, 1000);
