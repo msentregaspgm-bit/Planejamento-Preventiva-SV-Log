@@ -7,42 +7,44 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        /* Estilos Originais do seu Arquivo */
+        /* SEUS ESTILOS ORIGINAIS */
         :root { --sv-blue-dark: #001D3D; --sv-blue-mid: #003566; --sv-yellow: #FFD60A; --sv-text: #E0E1DD; --verde: #22C55E; --amarelo: #FFD60A; --vermelho: #EF4444; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--sv-blue-dark); color: var(--sv-text); margin: 0; padding: 0; overflow-x: hidden; }
-
         #splash { position: fixed; width: 100%; height: 100%; background: var(--sv-blue-dark); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         #splash img { width: 180px; }
-
         .navbar { background: var(--sv-blue-mid); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--sv-yellow); position: sticky; top: 0; z-index: 999; }
         .navbar img { height: 35px; }
         .btn-voltar { background: var(--sv-yellow); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; color: var(--sv-blue-dark); font-size: 11px; text-transform: uppercase; }
 
-        #screen-home { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
+        /* LÓGICA DE TELAS INDEPENDENTES */
+        .screen { display: none; padding: 10px; max-width: 1600px; margin: auto; min-height: 100vh; }
+        .active { display: block !important; }
+        #screen-home.active { display: flex !important; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+
+        /* MENU INICIAL */
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; max-width: 400px; }
         .menu-card { background: var(--sv-blue-mid); border: 2px solid var(--sv-yellow); padding: 30px; border-radius: 20px; cursor: pointer; text-align: center; }
         .menu-card h2 { margin-top: 10px; font-size: 1.2rem; color: var(--sv-yellow); text-transform: uppercase; }
 
-        .screen { display: none; padding: 10px; max-width: 1600px; margin: auto; min-height: 100vh; }
-        .active { display: block !important; }
-
-        /* ESTILOS MANUTENÇÃO (CONFORME APROVADO ANTES) */
+        /* ESTILOS MANUTENÇÃO (PDF/EXCEL/PRIORIDADE) */
         .kpi-grid-manut { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .kpi-card-manut { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); cursor: pointer; }
+        .kpi-card-manut { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); }
         .kpi-card-manut .value { font-size: 24px; font-weight: 800; }
         .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         table.tab-manut { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        table.tab-manut th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; text-transform: uppercase; }
+        table.tab-manut th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; }
         table.tab-manut td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
         .farol { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .btn-done { background: white; color: var(--sv-blue-dark); border: none; padding: 6px 12px; border-radius: 4px; font-weight: 800; cursor: pointer; font-size: 10px; }
 
-        /* ESTILOS BI ORIGINAIS */
+        /* SEUS ESTILOS ORIGINAIS BI/CHECKLIST */
         .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; }
         @media (min-width: 768px) { .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); } }
         .kpi-card { background: var(--sv-blue-mid); padding: 12px; border-radius: 10px; text-align: center; border-left: 4px solid var(--sv-yellow); }
@@ -59,15 +61,11 @@
         .drill-selectors { display: flex; gap: 2px; background: #001d3d; padding: 2px; border-radius: 4px; }
         .drill-btn { background: none; border: none; color: #888; padding: 4px 6px; font-size: 8px; font-weight: bold; cursor: pointer; border-radius: 3px; }
         .drill-btn.active { background: var(--sv-yellow); color: #001d3d; }
-
-        /* CHECKLIST ESTILO IMAGEM */
         .category-block { background: white; border-radius: 10px; margin: 15px 0; border: 2px solid #e1e5eb; overflow: hidden; color: #333; }
-        .category-title { background: #f1f3f6; font-weight: 800; padding: 10px; font-size: 11px; color: var(--sv-blue-mid); border-bottom: 1px solid #ddd; text-transform: uppercase; }
+        .category-title { background: #f1f3f6; font-weight: 800; padding: 10px; font-size: 11px; color: var(--sv-blue-mid); }
         .item-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
-        .item-text { font-size: 11px; font-weight: 600; text-transform: uppercase; flex: 1; padding-right: 10px; }
-        .res-check { width: 120px; padding: 6px; border-radius: 5px; background: var(--sv-blue-dark); color: white; border: 1px solid var(--sv-yellow); font-size: 11px; font-weight: bold; }
+        .res-check { width: 80px; padding: 4px; border-radius: 5px; }
         label.lbl-chk { display: block; margin: 10px 0 3px; font-weight: 700; color: var(--sv-yellow); font-size: 11px; }
-
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10001; padding: 10px; overflow-y: auto; }
         .modal-content { background: white; color: #333; border-radius: 10px; padding: 15px; width: 100%; max-width: 900px; margin: auto; }
     </style>
@@ -76,8 +74,8 @@
 
 <div id="splash"><img src="Logo.png"></div>
 
-<div id="screen-home" class="active">
-    <img src="Logo.png" style="width: 200px; margin-bottom: 30px;">
+<div id="screen-home" class="screen active">
+    <img src="Logo.png" style="width: 220px; margin-bottom: 40px;">
     <div class="menu-grid">
         <div class="menu-card" onclick="showScreen('manutencao')"><h2>Manutenção</h2></div>
         <div class="menu-card" onclick="showScreen('checklist')"><h2>Checklist</h2></div>
@@ -94,7 +92,7 @@
         <div class="kpi-card-manut" onclick="setFilterManut('verde')" style="border-left-color: var(--verde)"><h3>EM DIA</h3><div class="value" id="kOkManut">0</div></div>
     </div>
     <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; margin-bottom: 15px;">
-        <input type="text" id="searchManut" style="background:var(--sv-blue-dark); border:1px solid var(--sv-yellow); color:white; padding:10px; border-radius:5px;" placeholder="Buscar placa..." onkeyup="filtrarManut()">
+        <input type="text" id="searchManut" style="background:var(--sv-blue-dark); border:1px solid var(--sv-yellow); color:white; padding:10px;" placeholder="Buscar placa..." onkeyup="filtrarManut()">
         <button class="btn-voltar" style="background:#ff4d4d; color:white" onclick="exportarPDFManut()">📄 PDF</button>
         <button class="btn-voltar" style="background:#22c55e; color:white" onclick="exportarExcelManut()">📊 EXCEL</button>
         <button class="btn-voltar" onclick="carregarDadosManut()">🔄 ATUALIZAR</button>
@@ -169,7 +167,7 @@
     const URL_BI = "https://script.google.com/macros/s/AKfycbyScWcG4rDlFV4IabBhxaIQD1FmA0s-iLS9RvZyfVpgi9XrUjWyQxztZrA0RjmOmREmIw/exec";
     const KEY_OP = "centro_resultado";
 
-    let DADOS_MANUT = [], rawBI = [], dMaquinas = [], dItens = [], charts = {}, FILTRO_MANUT = 'todos';
+    let rawBI = [], dMaquinas = [], dItens = [], DADOS_MANUT = [], charts = {}, FILTRO_MANUT = 'todos';
     Chart.register(ChartDataLabels);
 
     window.onload = async () => {
@@ -183,7 +181,7 @@
     };
 
     function showScreen(id) {
-        window.scrollTo(0, 0);
+        window.scrollTo(0, 0); 
         document.getElementById('screen-home').classList.remove('active');
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('screen-' + id).classList.add('active');
@@ -191,7 +189,7 @@
         if(id === 'manutencao') carregarDadosManut();
     }
 
-    /* FUNÇÕES BI ORIGINAIS DO INDEX 3 */
+    /* SUAS FUNÇÕES BI ORIGINAIS */
     function setDrill(btn, mode, metric, sumKey) {
         btn.parentElement.querySelectorAll('.drill-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -242,7 +240,7 @@
         document.getElementById('modal').style.display = 'block';
     }
 
-    /* FUNÇÕES CHECKLIST ORIGINAIS */
+    /* SUAS FUNÇÕES CHECKLIST ORIGINAIS */
     function filtraIDs() { const t=document.getElementById('tipoMaquina').value; const s=document.getElementById('idMaquina'); s.innerHTML=''; dMaquinas.filter(m=>m.tipo_maquina===t).forEach(m=>s.innerHTML+=`<option value="${m.id_maquina}">${m.id_maquina}</option>`); }
     function irParaChecklist() {
         const id=document.getElementById('idMaquina').value, t=document.getElementById('tipoMaquina').value;
@@ -253,14 +251,14 @@
         [...new Set(itensF.map(i=>i.categoria))].forEach(c=>{
             let h=`<div class="category-block"><div class="category-title">${c}</div>`;
             itensF.filter(i=>i.categoria===c).forEach(it=>{ 
-                h+=`<div class="item-row"><span class="item-text">${it.item}</span><select class="res-check"><option value="OK">OK</option><option value="NOK">NOK</option></select></div>`; 
+                h+=`<div class="item-row"><span>${it.item}</span><select class="res-check"><option value="OK">OK</option><option value="NOK">NOK</option></select></div>`; 
             });
             area.innerHTML+=h+`</div>`;
         });
         showScreen('exec');
     }
 
-    /* LÓGICA MANUTENÇÃO APROVADA */
+    /* MANUTENÇÃO (PDF/EXCEL/PRIORIDADE) */
     async function carregarDadosManut() {
         const res = await fetch(URL_MANUT); DADOS_MANUT = await res.json();
         const lista = document.getElementById('listaManutencao'); lista.innerHTML = "";
@@ -305,7 +303,7 @@
 
     /* UTILITÁRIOS ORIGINAIS */
     function sort(arr, k, type, sK, l=99) { const m = arr.reduce((acc, d) => { const x = d[k] || "N/A"; acc[x] = (acc[x] || 0) + (type==="sum" ? (d[sK]||0) : 1); return acc; }, {}); const sorted = Object.entries(m).sort((a,b) => b[1] - a[1]).slice(0, l); return { l: sorted.map(x=>x[0]), v: sorted.map(x=>x[1]) }; }
-    function trend(arr) { const m = arr.reduce((acc, d) => { const x = String(d.data_e_hora_de_inicio).substring(0, 7); acc[x] = (acc[x] || 0) + 1; return acc; }, {}); const s = Object.entries(m).sort(); return { l: s.map(x=>x[0]), v: s.map(x=>x[1]) }; }
+    function trend(arr) { const m = arr.reduce((acc, d) => { const x = String(d.data_e_hora_de_inicio).substring(0, 7); if(x.includes('-')) acc[x] = (acc[x] || 0) + 1; return acc; }, {}); const s = Object.entries(m).sort(); return { l: s.map(x=>x[0]), v: s.map(x=>x[1]) }; }
     function processPizza(arr, k) { const m = arr.reduce((acc, d) => { const x = d[k] || "N/A"; acc[x] = (acc[x] || 0) + 1; return acc; }, {}); const total = Object.values(m).reduce((a, b) => a + b, 0); let others = 0, fL = [], fV = []; Object.entries(m).forEach(([lbl, v]) => { if ((v / total) < 0.20) others += v; else { fL.push(lbl); fV.push(v); } }); if (others > 0) { fL.push("Outros"); fV.push(others); } return { l: fL, v: fV }; }
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
     async function salvarChecklist() { alert("Enviado!"); location.reload(); }
