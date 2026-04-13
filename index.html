@@ -38,30 +38,31 @@
     </div>
 
     <div class="kpi-grid">
-        <div class="kpi-card" onclick="setFilter('todos')"><h3>FROTA</h3><div class="value" id="kTotal">0</div></div>
+        <div class="kpi-card" onclick="setFilter('todos')"><h3>FROTA ATIVA</h3><div class="value" id="kTotal">0</div></div>
         <div class="kpi-card" onclick="setFilter('vermelho')" style="border-left-color: var(--vermelho)"><h3>VENCIDAS</h3><div class="value" id="kVencidas">0</div></div>
         <div class="kpi-card" onclick="setFilter('amarelo')" style="border-left-color: var(--amarelo)"><h3>ATENÇÃO</h3><div class="value" id="kAtencao">0</div></div>
-        <div class="kpi-card" onclick="setFilter('verde')" style="border-left-color: var(--verde)"><h3>OK</h3><div class="value" id="kOk">0</div></div>
+        <div class="kpi-card" onclick="setFilter('verde')" style="border-left-color: var(--verde)"><h3>EM DIA</h3><div class="value" id="kOk">0</div></div>
     </div>
 
     <div class="controls">
-        <input type="text" id="search" placeholder="Busca rápida..." onkeyup="filtrar()">
-        <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
+        <input type="text" id="search" placeholder="Buscar placa..." onkeyup="filtrar()">
+        <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF CHECKLIST</button>
         <button class="btn-action btn-excel" onclick="exportarExcel()">📊 EXCEL</button>
         <button class="btn-action btn-refresh" onclick="carregarDados()">🔄 ATUALIZAR</button>
     </div>
 
-    <div id="loader" style="text-align:center; padding: 20px;">Sincronizando Dados...</div>
+    <div id="loader" style="text-align:center; padding: 20px;">Sincronizando...</div>
     <div class="table-card" id="tableBox" style="display:none">
         <table id="tabelaDados">
             <thead>
                 <tr>
                     <th>Placa / Modelo</th>
                     <th>KM Atual</th>
-                    <th>Próxima Meta</th>
+                    <th>Meta</th>
                     <th>Status</th>
                     <th>Faltam</th>
                     <th>Tipo</th>
+                    <th>Itens</th>
                     <th>Ação</th>
                 </tr>
             </thead>
@@ -70,7 +71,7 @@
     </div>
 
     <script>
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyN8TwXhl9nkwNkzjrwjNMchXnOiHUpk2IFfQ9LP6ShG6rmeuNOOBpvCB1qsw453nL_/exec";
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyvcSi6c3rAAnJd7QpfOFWc84eOUrtIurW23giO-tLg34bmycNG_yxms8BWsWZzmQzv/exec";
         let DADOS_LOCAIS = [];
         let FILTRO_STATUS = 'todos';
 
@@ -97,11 +98,12 @@
             document.getElementById('tableBox').style.display = 'block';
             const lista = document.getElementById('listaManutencao');
             lista.innerHTML = "";
-            let kpis = { total: DADOS_LOCAIS.length, ok: 0, atencao: 0, vencido: 0 };
+            let kpis = { ok: 0, atencao: 0, vencido: 0 };
             let baixas = JSON.parse(localStorage.getItem('baixas_sv') || '{}');
 
+            let processados = [];
+
             DADOS_LOCAIS.forEach(veiculo => {
-                // Lógica de Pulo: Pula se já baixou ESSA meta OU se passou 2000km dela
                 let proxima = veiculo.metasToda.find(m => {
                     let jaBaixou = baixas[veiculo.prefixo] && baixas[veiculo.prefixo].includes(m.km);
                     return !jaBaixou && veiculo.kmAtual <= (m.km + 2000);
@@ -110,32 +112,38 @@
                 if (proxima) {
                     let faltam = proxima.km - veiculo.kmAtual;
                     let status = "verde";
-                    if (faltam <= 0) status = "vermelho";
-                    else if (faltam <= 3000) status = "amarelo";
+                    let prioridade = 3;
 
-                    if(status === 'verde') kpis.ok++;
-                    if(status === 'amarelo') kpis.atencao++;
-                    if(status === 'vermelho') kpis.vencido++;
+                    if (faltam <= 0) { status = "vermelho"; prioridade = 1; kpis.vencido++; }
+                    else if (faltam <= 3000) { status = "amarelo"; prioridade = 2; kpis.atencao++; }
+                    else { kpis.ok++; }
 
-                    if (FILTRO_STATUS !== 'todos' && status !== FILTRO_STATUS) return;
-
-                    const cor = status === 'verde' ? 'var(--verde)' : (status === 'amarelo' ? 'var(--amarelo)' : 'var(--vermelho)');
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><b>${veiculo.prefixo}</b><br><small>${veiculo.modelo}</small></td>
-                        <td>${veiculo.kmAtual.toLocaleString()}</td>
-                        <td>${proxima.km.toLocaleString()} KM</td>
-                        <td><div class="farol" style="background:${cor}"></div> ${status.toUpperCase()}</td>
-                        <td style="color:${cor}; font-weight:bold">${faltam <= 0 ? 'VENCIDA' : faltam.toLocaleString() + ' KM'}</td>
-                        <td>${proxima.tipo}</td>
-                        <td>
-                            ${status !== 'verde' ? `<button class="btn-done" onclick="concluirMeta('${veiculo.prefixo}', ${proxima.km})">CONCLUIR</button>` : '---'}
-                        </td>
-                    `;
-                    lista.appendChild(tr);
+                    processados.push({ ...veiculo, proxima, faltam, status, prioridade });
                 }
             });
-            document.getElementById('kTotal').innerText = kpis.total;
+
+            // Ordenação: Vermelho (1), Amarelo (2), Verde (3)
+            processados.sort((a, b) => a.prioridade - b.prioridade);
+
+            processados.forEach(item => {
+                if (FILTRO_STATUS !== 'todos' && item.status !== FILTRO_STATUS) return;
+                const cor = item.status === 'verde' ? 'var(--verde)' : (item.status === 'amarelo' ? 'var(--amarelo)' : 'var(--vermelho)');
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${item.prefixo}</b><br><small>${item.modelo}</small></td>
+                    <td>${item.kmAtual.toLocaleString()}</td>
+                    <td>${item.proxima.km.toLocaleString()}</td>
+                    <td><div class="farol" style="background:${cor}"></div> ${item.status.toUpperCase()}</td>
+                    <td style="color:${cor}; font-weight:bold">${item.faltam <= 0 ? 'VENCIDA' : item.faltam.toLocaleString()}</td>
+                    <td>${item.proxima.tipo}</td>
+                    <td><small>${item.proxima.itens}</small></td>
+                    <td>${item.status !== 'verde' ? `<button class="btn-done" onclick="concluirMeta('${item.prefixo}', ${item.proxima.km})">CONCLUIR</button>` : '---'}</td>
+                `;
+                lista.appendChild(tr);
+            });
+
+            document.getElementById('kTotal').innerText = kpis.vencido + kpis.atencao + kpis.ok;
             document.getElementById('kOk').innerText = kpis.ok;
             document.getElementById('kAtencao').innerText = kpis.atencao;
             document.getElementById('kVencidas').innerText = kpis.vencido;
@@ -144,9 +152,23 @@
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'pt', 'a4');
-            doc.text("MANUTENÇÃO SV LOG", 40, 40);
-            doc.autoTable({ html: '#tabelaDados', startY: 60 });
-            doc.save("Manutencao_SVLOG.pdf");
+            const criticos = DADOS_LOCAIS.map(v => {
+                let baixas = JSON.parse(localStorage.getItem('baixas_sv') || '{}');
+                let p = v.metasToda.find(m => !(baixas[v.prefixo] && baixas[v.prefixo].includes(m.km)) && v.kmAtual <= (m.km + 2000));
+                return p && (p.km - v.kmAtual <= 3000) ? { ...v, p } : null;
+            }).filter(x => x !== null);
+
+            doc.setFontSize(14);
+            doc.text("SV LOG - CHECKLIST DE MANUTENÇÃO (VENCIDAS E ATENÇÃO)", 40, 40);
+            
+            doc.autoTable({
+                head: [['Placa', 'Modelo', 'KM Atual', 'Meta', 'Tipo', 'Itens de Manutenção']],
+                body: criticos.map(d => [d.prefixo, d.modelo, d.kmAtual.toLocaleString(), d.p.km.toLocaleString(), d.p.tipo, d.p.itens]),
+                startY: 60,
+                styles: { fontSize: 8 },
+                columnStyles: { 5: { cellWidth: 250 } }
+            });
+            doc.save("Checklist_SVLOG.pdf");
         }
 
         function exportarExcel() {
