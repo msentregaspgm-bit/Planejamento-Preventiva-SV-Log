@@ -4,48 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Manutenção - SV LOG</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --sv-blue: #001D3D; --sv-blue-mid: #003566; --sv-yellow: #FFD60A; --verde: #22C55E; --amarelo: #FFD60A; --vermelho: #EF4444; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--sv-blue); color: white; margin: 0; padding: 15px; }
         .header { background: var(--sv-blue-mid); padding: 10px 20px; border-bottom: 3px solid var(--sv-yellow); border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .header img { height: 50px; }
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .kpi-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); }
-        .kpi-card .value { font-size: 22px; font-weight: 800; margin-top: 5px; }
-        .controls { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 20px; }
+        .kpi-card { background: var(--sv-blue-mid); padding: 15px; border-radius: 12px; text-align: center; border-left: 4px solid var(--sv-yellow); cursor: pointer; }
+        .kpi-card .value { font-size: 24px; font-weight: 800; margin-top: 5px; }
+        .controls { display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; margin-bottom: 20px; }
         input#search { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,214,10,0.3); background: var(--sv-blue-mid); color: white; outline: none; }
-        .btn-refresh { background: var(--sv-yellow); color: var(--sv-blue); padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; }
-        .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; }
+        .btn-action { padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; height: 45px; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .btn-pdf { background: #ff4d4d; color: white; }
+        .btn-excel { background: #22c55e; color: white; }
+        .btn-refresh { background: var(--sv-yellow); color: var(--sv-blue); }
+        .table-card { background: var(--sv-blue-mid); border-radius: 12px; padding: 10px; overflow-x: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th { text-align: left; padding: 12px; color: var(--sv-yellow); border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 11px; text-transform: uppercase; }
         td { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
-        .progress-bg { width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; margin-top: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; transition: width 1s ease-in-out; }
         .farol { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        #loader { text-align: center; padding: 50px; font-weight: bold; color: var(--sv-yellow); }
     </style>
 </head>
 <body>
     <div class="header">
         <div style="display: flex; align-items: center; gap: 15px;">
             <img src="https://i.imgur.com/G4xK2uE.jpeg" alt="Logo SV Logística">
-            <span style="font-weight: 800; font-size: 18px;">PROGRAMAÇÃO DE REVISÕES (AUTOMÁTICO)</span>
+            <span style="font-weight: 800; font-size: 18px;">MANUTENÇÃO PREVENTIVA SV LOG</span>
         </div>
         <div id="relogio" style="font-size: 11px; opacity: 0.7;"></div>
     </div>
 
     <div class="kpi-grid">
-        <div class="kpi-card"><h3>FROTA</h3><div class="value" id="kTotal">0</div></div>
-        <div class="kpi-card" style="border-left-color: var(--vermelho)"><h3>VENCIDAS</h3><div class="value" id="kVencidas">0</div></div>
-        <div class="kpi-card" style="border-left-color: var(--amarelo)"><h3>ATENÇÃO</h3><div class="value" id="kAtencao">0</div></div>
-        <div class="kpi-card" style="border-left-color: var(--verde)"><h3>OK</h3><div class="value" id="kOk">0</div></div>
+        <div class="kpi-card" onclick="setFilter('todos')"><h3>FROTA</h3><div class="value" id="kTotal">0</div></div>
+        <div class="kpi-card" onclick="setFilter('vermelho')" style="border-left-color: var(--vermelho)"><h3>VENCIDAS</h3><div class="value" id="kVencidas">0</div></div>
+        <div class="kpi-card" onclick="setFilter('amarelo')" style="border-left-color: var(--amarelo)"><h3>ATENÇÃO</h3><div class="value" id="kAtencao">0</div></div>
+        <div class="kpi-card" onclick="setFilter('verde')" style="border-left-color: var(--verde)"><h3>EM DIA</h3><div class="value" id="kOk">0</div></div>
     </div>
 
     <div class="controls">
-        <input type="text" id="search" placeholder="Busca rápida placa ou modelo..." onkeyup="filtrar()">
-        <button class="btn-refresh" onclick="carregarDados()">🔄 ATUALIZAR</button>
+        <input type="text" id="search" placeholder="Busca placa ou modelo..." onkeyup="filtrar()">
+        <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF CHECKLIST</button>
+        <button class="btn-action btn-excel" onclick="exportarExcel()">📊 EXCEL GERAL</button>
+        <button class="btn-action btn-refresh" onclick="carregarDados()">🔄 ATUALIZAR</button>
     </div>
 
-    <div id="loader" style="text-align: center; padding: 20px;">Sincronizando...</div>
+    <div id="loader">SINCRONIZANDO DADOS...</div>
 
     <div class="table-card" id="tableBox" style="display:none">
         <table>
@@ -53,7 +60,7 @@
                 <tr>
                     <th>Placa / Modelo</th>
                     <th>KM Atual</th>
-                    <th>Meta da Revisão</th>
+                    <th>Próxima Meta</th>
                     <th>Status</th>
                     <th>Faltam</th>
                     <th>Tipo</th>
@@ -64,8 +71,9 @@
     </div>
 
     <script>
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycby2j_fR-HfUQygnUImLTMhYJKyLBzCyeO1H58CIl8G52IWa9PxA355nyOfghVou09dq/exec";
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwvAxv2iIE-KJdvGfJQpvhgt-_0G5iJL9Q-R8mE4qr_EMitpvyEBez3GMfdDO8De6-6/exec";
         let DADOS_LOCAIS = [];
+        let FILTRO_STATUS = 'todos';
 
         async function carregarDados() {
             document.getElementById('loader').style.display = 'block';
@@ -75,7 +83,7 @@
                 DADOS_LOCAIS = await res.json();
                 DADOS_LOCAIS.sort((a, b) => a.faltam - b.faltam);
                 renderizar();
-            } catch (e) { document.getElementById('loader').innerText = "Erro ao conectar."; }
+            } catch (e) { document.getElementById('loader').innerText = "Erro ao carregar dados."; }
         }
 
         function renderizar() {
@@ -89,6 +97,7 @@
                 if(item.status === 'verde') kpis.ok++;
                 if(item.status === 'amarelo') kpis.atencao++;
                 if(item.status === 'vermelho') kpis.vencido++;
+                if (FILTRO_STATUS !== 'todos' && item.status !== FILTRO_STATUS) return;
 
                 const corBarra = item.status === 'verde' ? 'var(--verde)' : (item.status === 'amarelo' ? 'var(--amarelo)' : 'var(--vermelho)');
                 const tr = document.createElement('tr');
@@ -109,6 +118,27 @@
             document.getElementById('kVencidas').innerText = kpis.vencido;
         }
 
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'pt', 'a4');
+            const criticos = DADOS_LOCAIS.filter(d => d.status !== 'verde');
+            doc.text("CHECKLIST MANUTENÇÃO SV LOG", 40, 40);
+            doc.autoTable({
+                head: [['Placa', 'Modelo', 'KM Atual', 'Próxima', 'Faltam', 'Tipo']],
+                body: criticos.map(d => [d.prefixo, d.modelo, d.kmAtual, d.proximaKM, d.faltam, d.tipo]),
+                startY: 60
+            });
+            doc.save("Checklist_Manutencao_SVLOG.pdf");
+        }
+
+        function exportarExcel() {
+            const ws = XLSX.utils.json_to_sheet(DADOS_LOCAIS);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Frota");
+            XLSX.writeFile(wb, "Relatorio_Manutencao_SVLOG.xlsx");
+        }
+
+        function setFilter(s) { FILTRO_STATUS = s; renderizar(); }
         function filtrar() {
             let val = document.getElementById("search").value.toUpperCase();
             let rows = document.getElementById("listaManutencao").rows;
