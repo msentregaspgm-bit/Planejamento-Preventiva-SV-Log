@@ -162,9 +162,10 @@
 <div id="modal"><div class="modal-content"><button onclick="closeModal()" style="float:right;background:red;color:white;border:none;padding:5px;border-radius:5px;">X</button><h3 id="modalTitle"></h3><div id="modalChart" style="display:none;height:350px"><canvas id="cPopUp"></canvas></div><div id="modalTable" style="overflow-x:auto"><table><thead><tr><th>OS</th><th>Prefixo</th><th>Sistema</th><th>Valor</th><th>HH</th><th>Operação</th></tr></thead><tbody id="modalBody"></tbody></table></div></div></div>
 
 <script>
+    // COLOQUE SUAS URLs AQUI
     const URL_MANUT = "https://script.google.com/macros/s/AKfycbyvcSi6c3rAAnJd7QpfOFWc84eOUrtIurW23giO-tLg34bmycNG_yxms8BWsWZzmQzv/exec";
     const URL_CHECKLIST = "https://script.google.com/macros/s/AKfycbxXLqXBs3Of8h2TE1I2B61NfcJVONzHe45wGpzRaXlHdSAnBsdrZ67aALUjiN3DVj1z/exec";
-    const URL_BI = "https://script.google.com/macros/s/AKfycbyScWcG4rDlFV4IabBhxaIQD1FmA0s-iLS9RvZyfVpgi9XrUjWyQxztZrA0RjmOmREmIw/exec";
+    const URL_BI = "https://script.google.com/macros/s/AKfycbwf2oeTQJff1VCHfN1HvqikKXJ62jbIB1S3HosZmY44iScjoxGkeSKIS_y5pc9PAIi0/exec";
     const KEY_OP = "centro_resultado";
 
     let rawBI = [], dMaquinas = [], dItens = [], DADOS_MANUT = [], charts = {}, FILTRO_MANUT = 'todos';
@@ -189,7 +190,7 @@
         if(id === 'manutencao') carregarDadosManut();
     }
 
-    /* SUAS FUNÇÕES BI ORIGINAIS */
+    /* FUNÇÕES BI COM REFERÊNCIA À NOVA COLUNA DE DATA */
     function setDrill(btn, mode, metric, sumKey) {
         btn.parentElement.querySelectorAll('.drill-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -197,10 +198,13 @@
         card.dataset.drillMode = mode; card.dataset.drillMetric = metric; card.dataset.drillSumKey = sumKey || "";
     }
     async function loadBI() { if(rawBI.length===0) { const res = await fetch(URL_BI); rawBI = await res.json(); } updateDashboard(); }
+    
     function updateDashboard() {
         const fD = document.getElementById('fData').value, fM = document.getElementById('fManut').value, fS = document.getElementById('fStatus').value;
-        const data = rawBI.filter(d => (fD ? String(d.data_e_hora_de_inicio).includes(fD) : true) && (fM ? d.manutencao === fM : true) && (fS ? d.status === fS : true));
+        // AJUSTADO PARA data_inicio_oc
+        const data = rawBI.filter(d => (fD ? String(d.data_inicio_oc).includes(fD) : true) && (fM ? d.manutencao === fM : true) && (fS ? d.status === fS : true));
         const custo = data.reduce((a, b) => a + (b.produtos || 0), 0), hh = data.reduce((a, b) => a + (b.hh || 0), 0);
+        
         document.getElementById('kTotal').innerText = data.length;
         document.getElementById('kAbertas').innerText = data.filter(x => x.status === 'Aberta').length;
         document.getElementById('kFechadas').innerText = data.filter(x => x.status === 'Finalizada').length;
@@ -210,6 +214,7 @@
         document.getElementById('kHHVal').innerText = (custo/hh || 0).toLocaleString('pt-br',{style:'currency',currency:'BRL', maximumFractionDigits:0});
         renderChartsBI(data);
     }
+
     function renderChartsBI(data) {
         const ids = ['cPareto','cHH','cTrend','cCustoEquip','cEquipFreq','cPizza','cCustoOp','cHHHoriz'];
         ids.forEach(id => { if(charts[id]) charts[id].destroy(); });
@@ -224,6 +229,7 @@
         const pz = processPizza(data, "sistema");
         charts.cPizza = new Chart(document.getElementById('cPizza'), { type:'pie', data:{ labels:pz.l, datasets:[{data:pz.v, backgroundColor:['#FFD60A','#00A8E8','#4CC9F0','#7209B7']}] }, options:{ maintainAspectRatio:false, plugins:{ legend:{position:'right',labels:{color:'#fff', font:{size:8}}}, datalabels:{color:'#fff'} } } });
     }
+
     function handleDrill(data, label, card) {
         const mode = card.dataset.drillMode || 'oc', metric = card.dataset.drillMetric || 'count', sumKey = card.dataset.drillSumKey || null;
         const sub = data.filter(d => d.sistema === label || d.cod_sec_veiculo === label || d[KEY_OP] === label);
@@ -240,7 +246,6 @@
         document.getElementById('modal').style.display = 'block';
     }
 
-    /* SUAS FUNÇÕES CHECKLIST ORIGINAIS */
     function filtraIDs() { const t=document.getElementById('tipoMaquina').value; const s=document.getElementById('idMaquina'); s.innerHTML=''; dMaquinas.filter(m=>m.tipo_maquina===t).forEach(m=>s.innerHTML+=`<option value="${m.id_maquina}">${m.id_maquina}</option>`); }
     function irParaChecklist() {
         const id=document.getElementById('idMaquina').value, t=document.getElementById('tipoMaquina').value;
@@ -258,7 +263,6 @@
         showScreen('exec');
     }
 
-    /* MANUTENÇÃO (PDF/EXCEL/PRIORIDADE) */
     async function carregarDadosManut() {
         const res = await fetch(URL_MANUT); DADOS_MANUT = await res.json();
         const lista = document.getElementById('listaManutencao'); lista.innerHTML = "";
@@ -281,6 +285,7 @@
         document.getElementById('kTotalManut').innerText = k.v + k.a + k.ok;
         document.getElementById('kVencidasManut').innerText = k.v; document.getElementById('kAtencaoManut').innerText = k.a; document.getElementById('kOkManut').innerText = k.ok;
     }
+
     function concluirManut(placa, km) {
         let b = JSON.parse(localStorage.getItem('baixas_sv') || '{}');
         if (!b[placa]) b[placa] = []; b[placa].push(km);
@@ -301,9 +306,18 @@
     }
     function exportarExcelManut() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tabelaDadosManut')), "Manutencao.xlsx"); }
 
-    /* UTILITÁRIOS ORIGINAIS */
+    /* UTILITÁRIOS ORIGINAIS COM AJUSTE DE DATA NO TREND */
     function sort(arr, k, type, sK, l=99) { const m = arr.reduce((acc, d) => { const x = d[k] || "N/A"; acc[x] = (acc[x] || 0) + (type==="sum" ? (d[sK]||0) : 1); return acc; }, {}); const sorted = Object.entries(m).sort((a,b) => b[1] - a[1]).slice(0, l); return { l: sorted.map(x=>x[0]), v: sorted.map(x=>x[1]) }; }
-    function trend(arr) { const m = arr.reduce((acc, d) => { const x = String(d.data_e_hora_de_inicio).substring(0, 7); if(x.includes('-')) acc[x] = (acc[x] || 0) + 1; return acc; }, {}); const s = Object.entries(m).sort(); return { l: s.map(x=>x[0]), v: s.map(x=>x[1]) }; }
+    
+    function trend(arr) { 
+        const m = arr.reduce((acc, d) => { 
+            // AJUSTADO PARA data_inicio_oc
+            const x = String(d.data_inicio_oc).substring(0, 7); 
+            if(x.includes('-')) acc[x] = (acc[x] || 0) + 1; return acc; 
+        }, {}); 
+        const s = Object.entries(m).sort(); return { l: s.map(x=>x[0]), v: s.map(x=>x[1]) }; 
+    }
+    
     function processPizza(arr, k) { const m = arr.reduce((acc, d) => { const x = d[k] || "N/A"; acc[x] = (acc[x] || 0) + 1; return acc; }, {}); const total = Object.values(m).reduce((a, b) => a + b, 0); let others = 0, fL = [], fV = []; Object.entries(m).forEach(([lbl, v]) => { if ((v / total) < 0.20) others += v; else { fL.push(lbl); fV.push(v); } }); if (others > 0) { fL.push("Outros"); fV.push(others); } return { l: fL, v: fV }; }
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
     async function salvarChecklist() { alert("Enviado!"); location.reload(); }
