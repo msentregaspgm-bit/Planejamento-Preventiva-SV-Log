@@ -15,8 +15,11 @@
         :root { --sv-blue-dark: #001D3D; --sv-blue-mid: #003566; --sv-yellow: #FFD60A; --sv-text: #E0E1DD; --verde: #22C55E; --amarelo: #FFD60A; --vermelho: #EF4444; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--sv-blue-dark); color: var(--sv-text); margin: 0; padding: 0; overflow-x: hidden; }
-        #splash { position: fixed; width: 100%; height: 100%; background: var(--sv-blue-dark); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #splash img { width: 180px; }
+        
+        /* AJUSTE NO SPLASH PARA VÍDEO */
+        #splash { position: fixed; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s ease; }
+        #video-abertura { width: 100%; height: 100%; object-fit: cover; }
+
         .navbar { background: var(--sv-blue-mid); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--sv-yellow); position: sticky; top: 0; z-index: 999; }
         .navbar img { height: 35px; }
         .btn-voltar { background: var(--sv-yellow); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; color: var(--sv-blue-dark); font-size: 11px; text-transform: uppercase; }
@@ -60,7 +63,11 @@
 </head>
 <body>
 
-<div id="splash"><img src="Logo.png"></div>
+<div id="splash">
+    <video id="video-abertura" autoplay muted playsinline>
+        <source src="Criação_de_Animação_de_Logo.mp4" type="video/mp4">
+    </video>
+</div>
 
 <div id="screen-home" class="screen active">
     <img src="Logo.png" style="width: 220px; margin-bottom: 40px;">
@@ -144,7 +151,6 @@
 <div id="modal"><div class="modal-content"><button onclick="closeModal()" style="float:right;background:red;color:white;border:none;padding:5px;border-radius:5px;">X</button><h3 id="modalTitle"></h3><div id="modalChart" style="display:none;height:350px"><canvas id="cPopUp"></canvas></div><div id="modalTable" style="overflow-x:auto"><table><thead><tr><th>OS</th><th>Prefixo</th><th>Sistema</th><th>Valor Total</th><th>HH</th><th>Operação</th></tr></thead><tbody id="modalBody"></tbody></table></div></div></div>
 
 <script>
-    // SUAS URLs ORIGINAIS RESTAURADAS
     const URL_MANUT = "https://script.google.com/macros/s/AKfycbyvcSi6c3rAAnJd7QpfOFWc84eOUrtIurW23giO-tLg34bmycNG_yxms8BWsWZzmQzv/exec";
     const URL_CHECKLIST = "https://script.google.com/macros/s/AKfycbxXLqXBs3Of8h2TE1I2B61NfcJVONzHe45wGpzRaXlHdSAnBsdrZ67aALUjiN3DVj1z/exec";
     const URL_BI = "https://script.google.com/macros/s/AKfycbyB4uMu5Mau-V1e47in2FsHPGNbaR62NIWJ_BdK8ugpMz4Q0dIKdFj6ZoWwDhw43G4g/exec";
@@ -154,7 +160,22 @@
     Chart.register(ChartDataLabels);
 
     window.onload = async () => {
-        setTimeout(() => document.getElementById('splash').style.display='none', 1000);
+        const vid = document.getElementById('video-abertura');
+        const splash = document.getElementById('splash');
+
+        // AJUSTE: O Splash só sai quando o vídeo termina
+        vid.onended = () => {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.style.display = 'none', 500);
+        };
+
+        // Segurança: Caso o vídeo falhe ou não carregue, remove o splash em 5 segundos
+        setTimeout(() => {
+            if(splash.style.display !== 'none') {
+                splash.style.display = 'none';
+            }
+        }, 5000);
+
         try {
             const resC = await fetch(URL_CHECKLIST); const dataC = await resC.json();
             dMaquinas = dataC.maquinas; dItens = dataC.itens;
@@ -182,9 +203,7 @@
 
     function updateDashboard() {
         const fD = document.getElementById('fData').value, fM = document.getElementById('fManut').value, fS = document.getElementById('fStatus').value;
-        // Filtro usa data_inicio_oc
         const data = rawBI.filter(d => (fD ? String(d.data_inicio_oc).includes(fD) : true) && (fM ? d.manutencao === fM : true) && (fS ? d.status === fS : true));
-        // Custo usa total_os
         const custo = data.reduce((a, b) => a + (b.total_os || 0), 0), hh = data.reduce((a, b) => a + (b.hh || 0), 0);
         
         document.getElementById('kTotal').innerText = data.length;
@@ -205,7 +224,7 @@
         charts.cPareto = new Chart(document.getElementById('cPareto'), { type:'bar', data:{ labels:sort(data,"sistema","count").l, datasets:[{data:sort(data,"sistema","count").v, backgroundColor:'#FFD60A'}] }, options:cfg() });
         charts.cHH = new Chart(document.getElementById('cHH'), { type:'bar', data:{ labels:sort(data,"sistema","sum","hh").l, datasets:[{data:sort(data,"sistema","sum","hh").v, backgroundColor:'#00A8E8'}] }, options:cfg() });
         charts.cCustoOp = new Chart(document.getElementById('cCustoOp'), { type:'bar', data:{ labels:sort(data,KEY_OP,"sum","total_os",5).l, datasets:[{data:sort(data,KEY_OP,"sum","total_os",5).v, backgroundColor:'#22C55E'}] }, options:cfg(true) });
-        charts.cTrend = new Chart(document.getElementById('cTrend'), { type:'line', data:{ labels:trend(data).l, datasets:[{data:trend(data).v, borderColor:'#FFD60A', fill:true, backgroundColor:'rgba(255,214,10,0.1)', tension:0.3}] }, options:cfg() });
+        charts.cTrend = new Chart(document.getElementById('cTrend'), { type:'line', data:{ labels:trend(data).l, datasets:[{data:trend(data).v, borderColor:'#FFD60A', fill:true, backgroundColor:'rgba(214,214,10,0.1)', tension:0.3}] }, options:cfg() });
         charts.cCustoEquip = new Chart(document.getElementById('cCustoEquip'), { type:'bar', data:{ labels:sort(data,"marca_placa","sum","total_os",10).l, datasets:[{data:sort(data,"marca_placa","sum","total_os",10).v, backgroundColor:'#ef4444'}] }, options:{...cfg(true), indexAxis:'y'} });
         charts.cEquipFreq = new Chart(document.getElementById('cEquipFreq'), { type:'bar', data:{ labels:sort(data,"marca_placa","count",null,10).l, datasets:[{data:sort(data,"marca_placa","count",null,10).v, backgroundColor:'#4CC9F0'}] }, options:{...cfg(), indexAxis:'y'} });
         charts.cHHHoriz = new Chart(document.getElementById('cHHHoriz'), { type:'bar', data:{ labels:sort(data,"sistema","sum","hh").l, datasets:[{data:sort(data,"sistema","sum","hh").v, backgroundColor:'#7209B7'}] }, options:{...cfg(), indexAxis:'y'} });
